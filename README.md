@@ -13,9 +13,11 @@ en GitHub Personal Access Token (PAT) du selv limer inn og som kun lagres i
 
 - **Data + sync-kode**: [GarminData](https://github.com/fbaltzersen/GarminData) (privat) —
   daglig GitHub Actions-jobb henter data fra Garmin Connect og committer den dit.
-- **Denne appen**: leser `data/rollups/*.json` fra GarminData via GitHub sitt
-  Contents API (`Accept: application/vnd.github.raw+json`), og kan trigge en ny
-  sync på forespørsel via `workflow_dispatch`.
+- **Denne appen**: leser `data/rollups/*.json` og `data/ai/plan.json` fra
+  GarminData via GitHub sitt Contents API
+  (`Accept: application/vnd.github.raw+json`), skriver dagbok-notater dit via
+  samme API, og kan trigge `sync.yml` eller `generate_plan.yml` på forespørsel
+  via `workflow_dispatch`.
 - **Hosting**: GitHub Pages, deployet automatisk via `.github/workflows/deploy.yml`
   ved push til `main`.
 
@@ -23,7 +25,7 @@ en GitHub Personal Access Token (PAT) du selv limer inn og som kun lagres i
 
 1. Opprett en finkornet GitHub Personal Access Token med tilgang kun til
    `fbaltzersen/GarminData`:
-   - **Contents**: Read-only
+   - **Contents**: Read and write (skrivetilgang trengs for dagbok-loggingen)
    - **Actions**: Read and write
 2. Åpne dashboardet og lim inn tokenet når du blir bedt om det.
 
@@ -38,8 +40,8 @@ npm run dev
 
 ```
 src/
-  api/github.ts        PAT-lagring + Contents/Actions API-klient
-  api/syncTrigger.ts    dispatch + polling av sync-workflowen
-  hooks/useRollupData.ts henter alle rollup-filene
-  components/            paneler: mål, VO2max, treningsstatus, volum, aktiviteter, restitusjon
+  api/github.ts        PAT-lagring + Contents/Actions API-klient (les + skriv)
+  api/syncTrigger.ts    dispatch + polling av GitHub Actions-workflower
+  hooks/useRollupData.ts henter alle rollup-filene + AI-planen
+  components/            paneler: mål, AI-treningsplan, dagbok, VO2max, treningsstatus, volum, aktiviteter, restitusjon
 ```
