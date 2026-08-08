@@ -5,7 +5,7 @@ export function QuickStats({ latest }: { latest: LatestRollup }) {
   return (
     <div className="stat-row">
       <div className="stat-tile">
-        <span className="label">Ukentlig volum</span>
+        <span className="label">Ukentlig volum (utendørs)</span>
         <span className="value tabular">
           {latest.weekly_volume_km_last_7d != null ? `${latest.weekly_volume_km_last_7d} km` : '—'}
         </span>

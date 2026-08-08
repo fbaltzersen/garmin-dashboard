@@ -20,7 +20,7 @@ function ChartTooltip({ active, payload, label }: any) {
 export function WeeklyVolumeChart({ data }: { data: WeeklyVolumePoint[] }) {
   const recent = data.slice(-26)
   return (
-    <Panel title="Ukentlig løpsdistanse (siste 26 uker)">
+    <Panel title="Ukentlig løpsdistanse — kun utendørs (siste 26 uker)">
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={recent} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
           <CartesianGrid stroke="var(--gridline)" vertical={false} />
