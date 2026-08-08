@@ -31,12 +31,13 @@ function sleep(ms: number): Promise<void> {
 export async function triggerWorkflowAndTrack(
   workflowFile: string,
   onUpdate: (state: SyncState) => void,
+  inputs?: Record<string, string>,
 ): Promise<void> {
   onUpdate({ phase: 'dispatching' })
   const dispatchedAt = Date.now() - 10_000 // small buffer for clock skew
 
   try {
-    await dispatchWorkflow(workflowFile)
+    await dispatchWorkflow(workflowFile, inputs)
   } catch (err) {
     onUpdate({ phase: 'failure', error: (err as Error).message })
     return

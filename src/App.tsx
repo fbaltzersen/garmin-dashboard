@@ -12,11 +12,14 @@ import { WeeklyVolumeChart } from './components/WeeklyVolumeChart'
 import { ActivityTable } from './components/ActivityTable'
 import { RecoveryPanel } from './components/RecoveryPanel'
 import { PlanPanel } from './components/PlanPanel'
-import { JournalForm } from './components/JournalForm'
 import { SessionTypeProgressionPanel } from './components/SessionTypeProgressionPanel'
+import { LatestActivityCard } from './components/LatestActivityCard'
+
+type Tab = 'progresjon' | 'planlegging'
 
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
+  const [tab, setTab] = useState<Tab>('progresjon')
   const { data, loading, error, reload } = useRollupData()
 
   function handleForget() {
@@ -57,20 +60,41 @@ function App() {
 
       {hasToken && data && (
         <>
-          <GoalPanel latest={data.latest} trend={data.racePredictions} />
-          <div className="panel">
-            <QuickStats latest={data.latest} />
-          </div>
-          <PlanPanel plan={data.plan} onSuccess={reload} />
-          <div className="panel-grid">
-            <Vo2MaxChart data={data.vo2max} />
-            <TrainingStatusStrip data={data.trainingStatus} />
-          </div>
-          <WeeklyVolumeChart data={data.weeklyVolume} />
-          <ActivityTable activities={data.activities} />
-          <SessionTypeProgressionPanel data={data.sessionTypeTrends} />
-          <JournalForm />
-          <RecoveryPanel data={data.recovery} />
+          <LatestActivityCard activity={data.activities[0] ?? null} />
+
+          <nav className="tab-nav">
+            <button
+              className={`tab-button ${tab === 'progresjon' ? 'active' : ''}`}
+              onClick={() => setTab('progresjon')}
+            >
+              Progresjon
+            </button>
+            <button
+              className={`tab-button ${tab === 'planlegging' ? 'active' : ''}`}
+              onClick={() => setTab('planlegging')}
+            >
+              Planlegging
+            </button>
+          </nav>
+
+          {tab === 'progresjon' && (
+            <>
+              <GoalPanel latest={data.latest} plan={data.plan} trend={data.aiRacePredictionTrend} />
+              <div className="panel">
+                <QuickStats latest={data.latest} />
+              </div>
+              <div className="panel-grid">
+                <Vo2MaxChart data={data.vo2max} />
+                <TrainingStatusStrip data={data.trainingStatus} />
+              </div>
+              <WeeklyVolumeChart data={data.weeklyVolume} />
+              <ActivityTable activities={data.activities} />
+              <SessionTypeProgressionPanel data={data.sessionTypeTrends} />
+              <RecoveryPanel data={data.recovery} />
+            </>
+          )}
+
+          {tab === 'planlegging' && <PlanPanel plan={data.plan} onSuccess={reload} />}
         </>
       )}
     </div>

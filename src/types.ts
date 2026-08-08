@@ -58,6 +58,7 @@ export interface ActivitySummary {
   distance_km: number
   duration_min: number
   avg_hr: number | null
+  garmin_note?: string | null
 }
 
 export interface ActivityLap {
@@ -128,3 +129,9 @@ export interface SessionTypePoint {
 }
 
 export type SessionTypeTrends = Record<CompletedSessionType, SessionTypePoint[]>
+
+export interface AiRacePredictionPoint {
+  date: string
+  seconds: number | null
+  confidence: 'high' | 'medium' | 'low' | null
+}

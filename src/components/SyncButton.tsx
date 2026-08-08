@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { triggerWorkflowAndTrack, type SyncState } from '../api/syncTrigger'
 
-const PHASE_LABEL: Record<SyncState['phase'], string> = {
+export const PHASE_LABEL: Record<SyncState['phase'], string> = {
   idle: '',
   dispatching: 'Starter…',
   waiting_for_run: 'Venter på kjøring…',
@@ -10,6 +10,24 @@ const PHASE_LABEL: Record<SyncState['phase'], string> = {
   success: 'Ferdig ✓',
   failure: 'Feilet',
   timeout: 'Tar lengre tid enn ventet',
+}
+
+export function useWorkflowTrigger(workflowFile: string, onSuccess: () => void) {
+  const [state, setState] = useState<SyncState>({ phase: 'idle' })
+  const busy = !['idle', 'success', 'failure', 'timeout'].includes(state.phase)
+
+  async function trigger(inputs?: Record<string, string>) {
+    await triggerWorkflowAndTrack(
+      workflowFile,
+      (s) => {
+        setState(s)
+        if (s.phase === 'success') onSuccess()
+      },
+      inputs,
+    )
+  }
+
+  return { state, busy, trigger }
 }
 
 export function WorkflowButton({
@@ -23,21 +41,12 @@ export function WorkflowButton({
   runningLabel: string
   onSuccess: () => void
 }) {
-  const [state, setState] = useState<SyncState>({ phase: 'idle' })
-  const busy = !['idle', 'success', 'failure', 'timeout'].includes(state.phase)
-
-  async function handleClick() {
-    await triggerWorkflowAndTrack(workflowFile, (s) => {
-      setState(s)
-      if (s.phase === 'success') onSuccess()
-    })
-  }
-
+  const { state, busy, trigger } = useWorkflowTrigger(workflowFile, onSuccess)
   const label = state.phase === 'idle' ? idleLabel : busy ? runningLabel : PHASE_LABEL[state.phase]
 
   return (
     <div>
-      <button className="sync-button" disabled={busy} onClick={handleClick}>
+      <button className="sync-button" disabled={busy} onClick={() => trigger()}>
         {busy && '⏳ '}
         {label}
       </button>

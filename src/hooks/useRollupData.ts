@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { fetchRepoJson, getToken, GitHubApiError } from '../api/github'
 import type {
   ActivitySummary,
+  AiRacePredictionPoint,
   LatestRollup,
   RacePredictionPoint,
   RecoveryPoint,
@@ -22,6 +23,7 @@ export interface RollupData {
   activities: ActivitySummary[]
   plan: TrainingPlan | null
   sessionTypeTrends: SessionTypeTrends | null
+  aiRacePredictionTrend: AiRacePredictionPoint[]
 }
 
 interface State {
@@ -51,13 +53,17 @@ export function useRollupData() {
           fetchRepoJson<ActivitySummary[]>('data/rollups/activities.json'),
         ])
       // Plan/session-type trends may not exist yet on a fresh setup — treat 404 as "none yet".
-      const [plan, sessionTypeTrends] = await Promise.all([
+      const [plan, sessionTypeTrends, aiRacePredictionTrend] = await Promise.all([
         fetchRepoJson<TrainingPlan>('data/ai/plan.json').catch((err) => {
           if (err instanceof GitHubApiError && err.status === 404) return null
           throw err
         }),
         fetchRepoJson<SessionTypeTrends>('data/rollups/session_type_trends.json').catch((err) => {
           if (err instanceof GitHubApiError && err.status === 404) return null
+          throw err
+        }),
+        fetchRepoJson<AiRacePredictionPoint[]>('data/ai/race_prediction_trend.json').catch((err) => {
+          if (err instanceof GitHubApiError && err.status === 404) return []
           throw err
         }),
       ])
@@ -72,6 +78,7 @@ export function useRollupData() {
           activities,
           plan,
           sessionTypeTrends,
+          aiRacePredictionTrend,
         },
         loading: false,
         error: null,

@@ -103,10 +103,10 @@ export async function writeRepoJson(path: string, data: unknown, commitMessage: 
   })
 }
 
-export async function dispatchWorkflow(workflowFile: string): Promise<void> {
+export async function dispatchWorkflow(workflowFile: string, inputs?: Record<string, string>): Promise<void> {
   await githubFetch(`/repos/${OWNER}/${DATA_REPO}/actions/workflows/${workflowFile}/dispatches`, {
     method: 'POST',
-    body: JSON.stringify({ ref: 'main' }),
+    body: JSON.stringify({ ref: 'main', ...(inputs ? { inputs } : {}) }),
   })
 }
 

@@ -1,6 +1,6 @@
 import type { SessionType, TrainingPlan } from '../types'
 import { Panel } from './Panel'
-import { WorkflowButton } from './SyncButton'
+import { GeneratePlanButton } from './GeneratePlanButton'
 import { formatDate, formatSecondsAsClock } from '../utils/format'
 
 const SESSION_LABEL: Record<SessionType, string> = {
@@ -29,12 +29,7 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
   return (
     <Panel title="AI-treningsplan">
       <div className="app-header-actions" style={{ marginBottom: 16 }}>
-        <WorkflowButton
-          workflowFile="generate_plan.yml"
-          idleLabel={plan ? 'Generer ny plan' : 'Generer plan'}
-          runningLabel="Genererer plan…"
-          onSuccess={onSuccess}
-        />
+        <GeneratePlanButton idleLabel={plan ? 'Generer ny plan' : 'Generer plan'} onSuccess={onSuccess} />
       </div>
 
       {!plan && <p className="hero-note">Ingen plan generert ennå. Trykk "Generer plan" for å komme i gang.</p>}
@@ -46,38 +41,40 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
             {formatDate(plan.generated_at)}
           </div>
 
-          <table className="activity-table plan-table" style={{ marginBottom: 20 }}>
-            <thead>
-              <tr>
-                <th>Dag</th>
-                <th>Type</th>
-                <th>Økt</th>
-                <th>Distanse</th>
-                <th>Innsats</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plan.daily_plan.map((d) => (
-                <tr key={d.date} style={{ cursor: 'default' }} title={d.rationale}>
-                  <td>
-                    {d.day} <span className="tt-label">{formatDate(d.date)}</span>
-                  </td>
-                  <td>
-                    <span
-                      className="status-swatch"
-                      style={{ background: SESSION_COLOR[d.session_type], display: 'inline-block', marginRight: 6 }}
-                    />
-                    {SESSION_LABEL[d.session_type]}
-                  </td>
-                  <td>{d.title}</td>
-                  <td className="tabular">
-                    {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'}
-                  </td>
-                  <td>{d.target_effort}</td>
+          <div className="table-scroll" style={{ marginBottom: 20 }}>
+            <table className="activity-table plan-table">
+              <thead>
+                <tr>
+                  <th>Dag</th>
+                  <th>Type</th>
+                  <th>Økt</th>
+                  <th>Distanse</th>
+                  <th>Innsats</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {plan.daily_plan.map((d) => (
+                  <tr key={d.date} style={{ cursor: 'default' }} title={d.rationale}>
+                    <td>
+                      {d.day} <span className="tt-label">{formatDate(d.date)}</span>
+                    </td>
+                    <td>
+                      <span
+                        className="status-swatch"
+                        style={{ background: SESSION_COLOR[d.session_type], display: 'inline-block', marginRight: 6 }}
+                      />
+                      {SESSION_LABEL[d.session_type]}
+                    </td>
+                    <td>{d.title}</td>
+                    <td className="tabular">
+                      {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'}
+                    </td>
+                    <td>{d.target_effort}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="panel-grid" style={{ marginBottom: 16 }}>
             <div>
