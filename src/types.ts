@@ -73,3 +73,44 @@ export interface ActivityDetail {
   splits: { activityId: number; lapDTOs: ActivityLap[] }
   typed_splits: { activityId: number; splits: unknown[] }
 }
+
+export type SessionType = 'hvile' | 'rolig' | 'intervall' | 'terskel' | 'langtur'
+
+export interface WeeklyPlanDay {
+  day: string
+  date: string
+  session_type: SessionType
+  title: string
+  target_distance_km: number
+  target_duration_min: number
+  target_effort: string
+  rationale: string
+}
+
+export interface TrainingPlan {
+  week_start: string
+  generated_at: string
+  model: string
+  vo2max_projection: {
+    current: number
+    current_date: string
+    in_4_weeks: number
+    in_12_weeks: number
+    reasoning: string
+  }
+  race_prediction: {
+    current_5k_seconds: number
+    estimated_weeks_to_goal: number
+    confidence: 'high' | 'medium' | 'low'
+    reasoning: string
+  }
+  weekly_plan: WeeklyPlanDay[]
+  coaching_notes: string
+}
+
+export interface JournalEntry {
+  created_at: string
+  rpe: number
+  feeling: string
+  note: string
+}

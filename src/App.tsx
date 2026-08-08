@@ -11,6 +11,8 @@ import { TrainingStatusStrip } from './components/TrainingStatusStrip'
 import { WeeklyVolumeChart } from './components/WeeklyVolumeChart'
 import { ActivityTable } from './components/ActivityTable'
 import { RecoveryPanel } from './components/RecoveryPanel'
+import { PlanPanel } from './components/PlanPanel'
+import { JournalForm } from './components/JournalForm'
 
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
@@ -58,6 +60,8 @@ function App() {
           <div className="panel">
             <QuickStats latest={data.latest} />
           </div>
+          <PlanPanel plan={data.plan} onSuccess={reload} />
+          <JournalForm />
           <div className="panel-grid">
             <Vo2MaxChart data={data.vo2max} />
             <TrainingStatusStrip data={data.trainingStatus} />

@@ -1,4 +1,4 @@
-import { dispatchSyncWorkflow, listRecentSyncRuns, type WorkflowRun } from './github'
+import { dispatchWorkflow, listRecentRuns, type WorkflowRun } from './github'
 
 export type SyncPhase =
   | 'idle'
@@ -24,15 +24,19 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-/** Runs the full dispatch -> poll -> resolve flow, calling `onUpdate` after
- * every state transition. Dispatch is fire-and-forget (GitHub returns no run
- * ID), so the matching run is found by created_at >= dispatch time. */
-export async function triggerSyncAndTrack(onUpdate: (state: SyncState) => void): Promise<void> {
+/** Runs the full dispatch -> poll -> resolve flow for the given workflow file,
+ * calling `onUpdate` after every state transition. Dispatch is fire-and-forget
+ * (GitHub returns no run ID), so the matching run is found by
+ * created_at >= dispatch time. Used for both sync.yml and generate_plan.yml. */
+export async function triggerWorkflowAndTrack(
+  workflowFile: string,
+  onUpdate: (state: SyncState) => void,
+): Promise<void> {
   onUpdate({ phase: 'dispatching' })
   const dispatchedAt = Date.now() - 10_000 // small buffer for clock skew
 
   try {
-    await dispatchSyncWorkflow()
+    await dispatchWorkflow(workflowFile)
   } catch (err) {
     onUpdate({ phase: 'failure', error: (err as Error).message })
     return
@@ -47,7 +51,7 @@ export async function triggerSyncAndTrack(onUpdate: (state: SyncState) => void):
     await sleep(POLL_INTERVAL_MS)
     let runs: WorkflowRun[]
     try {
-      runs = await listRecentSyncRuns()
+      runs = await listRecentRuns(workflowFile)
     } catch (err) {
       onUpdate({ phase: 'failure', error: (err as Error).message })
       return

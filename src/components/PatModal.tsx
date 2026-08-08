@@ -16,8 +16,8 @@ export function PatModal({ onSaved }: { onSaved: () => void }) {
         <h2>Koble til GarminData</h2>
         <p>
           Lim inn en finkornet GitHub Personal Access Token med tilgang til{' '}
-          <code>fbaltzersen/GarminData</code> (permissions: Contents: Read-only, Actions: Read
-          and write). Tokenet lagres kun i denne nettleseren.
+          <code>fbaltzersen/GarminData</code> (permissions: Contents: Read and write, Actions:
+          Read and write). Tokenet lagres kun i denne nettleseren.
         </p>
         <input
           type="password"

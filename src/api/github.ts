@@ -71,8 +71,40 @@ export async function fetchActivityDetail<T>(date: string, activityId: number): 
   return fetchRepoJson<T>(`data/activities/${year}/${month}/${activityId}.json`)
 }
 
-export async function dispatchSyncWorkflow(): Promise<void> {
-  await githubFetch(`/repos/${OWNER}/${DATA_REPO}/actions/workflows/sync.yml/dispatches`, {
+function utf8ToBase64(str: string): string {
+  const bytes = new TextEncoder().encode(str)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
+}
+
+async function getFileSha(path: string): Promise<string | null> {
+  try {
+    const res = await githubFetch(`/repos/${OWNER}/${DATA_REPO}/contents/${path}`)
+    const data = (await res.json()) as { sha: string }
+    return data.sha
+  } catch (err) {
+    if (err instanceof GitHubApiError && err.status === 404) return null
+    throw err
+  }
+}
+
+/** Creates or updates a JSON file in GarminData via the Contents API. Requires
+ * the PAT to have Contents: Read and write. */
+export async function writeRepoJson(path: string, data: unknown, commitMessage: string): Promise<void> {
+  const sha = await getFileSha(path)
+  await githubFetch(`/repos/${OWNER}/${DATA_REPO}/contents/${path}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: commitMessage,
+      content: utf8ToBase64(JSON.stringify(data, null, 2)),
+      ...(sha ? { sha } : {}),
+    }),
+  })
+}
+
+export async function dispatchWorkflow(workflowFile: string): Promise<void> {
+  await githubFetch(`/repos/${OWNER}/${DATA_REPO}/actions/workflows/${workflowFile}/dispatches`, {
     method: 'POST',
     body: JSON.stringify({ ref: 'main' }),
   })
@@ -86,9 +118,9 @@ export interface WorkflowRun {
   created_at: string
 }
 
-export async function listRecentSyncRuns(): Promise<WorkflowRun[]> {
+export async function listRecentRuns(workflowFile: string): Promise<WorkflowRun[]> {
   const res = await githubFetch(
-    `/repos/${OWNER}/${DATA_REPO}/actions/workflows/sync.yml/runs?event=workflow_dispatch&per_page=5`,
+    `/repos/${OWNER}/${DATA_REPO}/actions/workflows/${workflowFile}/runs?event=workflow_dispatch&per_page=5`,
   )
   const data = (await res.json()) as { workflow_runs: WorkflowRun[] }
   return data.workflow_runs
