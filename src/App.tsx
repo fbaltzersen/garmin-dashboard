@@ -13,6 +13,7 @@ import { ActivityTable } from './components/ActivityTable'
 import { RecoveryPanel } from './components/RecoveryPanel'
 import { PlanPanel } from './components/PlanPanel'
 import { JournalForm } from './components/JournalForm'
+import { SessionTypeProgressionPanel } from './components/SessionTypeProgressionPanel'
 
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
@@ -61,13 +62,14 @@ function App() {
             <QuickStats latest={data.latest} />
           </div>
           <PlanPanel plan={data.plan} onSuccess={reload} />
-          <JournalForm />
           <div className="panel-grid">
             <Vo2MaxChart data={data.vo2max} />
             <TrainingStatusStrip data={data.trainingStatus} />
           </div>
           <WeeklyVolumeChart data={data.weeklyVolume} />
           <ActivityTable activities={data.activities} />
+          <SessionTypeProgressionPanel data={data.sessionTypeTrends} />
+          <JournalForm />
           <RecoveryPanel data={data.recovery} />
         </>
       )}

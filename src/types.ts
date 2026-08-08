@@ -88,7 +88,8 @@ export interface WeeklyPlanDay {
 }
 
 export interface TrainingPlan {
-  week_start: string
+  plan_start_date: string
+  plan_end_date: string
   generated_at: string
   model: string
   vo2max_projection: {
@@ -104,7 +105,7 @@ export interface TrainingPlan {
     confidence: 'high' | 'medium' | 'low'
     reasoning: string
   }
-  weekly_plan: WeeklyPlanDay[]
+  daily_plan: WeeklyPlanDay[]
   coaching_notes: string
 }
 
@@ -113,4 +114,17 @@ export interface JournalEntry {
   rpe: number
   feeling: string
   note: string
+  activity_id?: number
 }
+
+export type CompletedSessionType = 'rolig' | 'terskel' | 'intervall'
+
+export interface SessionTypePoint {
+  date: string
+  activity_id: number
+  pace_min_per_km: number
+  avg_hr: number | null
+  distance_km: number
+}
+
+export type SessionTypeTrends = Record<CompletedSessionType, SessionTypePoint[]>

@@ -42,10 +42,11 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
       {plan && (
         <>
           <div className="hero-label" style={{ marginBottom: 8 }}>
-            Uke fra {formatDate(plan.week_start)} · generert {formatDate(plan.generated_at)}
+            {formatDate(plan.plan_start_date)} – {formatDate(plan.plan_end_date)} · generert{' '}
+            {formatDate(plan.generated_at)}
           </div>
 
-          <table className="activity-table" style={{ marginBottom: 20 }}>
+          <table className="activity-table plan-table" style={{ marginBottom: 20 }}>
             <thead>
               <tr>
                 <th>Dag</th>
@@ -56,7 +57,7 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
               </tr>
             </thead>
             <tbody>
-              {plan.weekly_plan.map((d) => (
+              {plan.daily_plan.map((d) => (
                 <tr key={d.date} style={{ cursor: 'default' }} title={d.rationale}>
                   <td>
                     {d.day} <span className="tt-label">{formatDate(d.date)}</span>

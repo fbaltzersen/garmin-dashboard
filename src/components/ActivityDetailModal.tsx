@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fetchActivityDetail } from '../api/github'
+import { fetchJournalEntryForActivity, upsertJournalEntry } from '../api/journal'
+import { FEELINGS, FEELING_LABEL, type Feeling } from '../journalOptions'
 import type { ActivityDetail, ActivitySummary } from '../types'
 
 export function ActivityDetailModal({
@@ -13,11 +15,52 @@ export function ActivityDetailModal({
   const [detail, setDetail] = useState<ActivityDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  const [rpe, setRpe] = useState(5)
+  const [feeling, setFeeling] = useState<Feeling>('ok')
+  const [note, setNote] = useState('')
+  const [journalStatus, setJournalStatus] = useState<'idle' | 'loading' | 'saving' | 'saved' | 'error'>(
+    'loading',
+  )
+  const [journalError, setJournalError] = useState<string | null>(null)
+
   useEffect(() => {
     fetchActivityDetail<ActivityDetail>(activity.date, activity.activity_id)
       .then(setDetail)
       .catch((err) => setError(err.message))
+
+    setJournalStatus('loading')
+    fetchJournalEntryForActivity(activity.date, activity.activity_id)
+      .then((entry) => {
+        if (entry) {
+          setRpe(entry.rpe)
+          setFeeling(entry.feeling as Feeling)
+          setNote(entry.note)
+        }
+        setJournalStatus('idle')
+      })
+      .catch((err) => {
+        setJournalError(err.message)
+        setJournalStatus('error')
+      })
   }, [activity])
+
+  async function handleSaveJournal() {
+    setJournalStatus('saving')
+    setJournalError(null)
+    try {
+      await upsertJournalEntry(activity.date, {
+        created_at: new Date().toISOString(),
+        rpe,
+        feeling,
+        note: note.trim(),
+        activity_id: activity.activity_id,
+      })
+      setJournalStatus('saved')
+    } catch (err) {
+      setJournalStatus('error')
+      setJournalError(err instanceof Error ? err.message : 'Kunne ikke lagre')
+    }
+  }
 
   const laps = detail?.splits?.lapDTOs ?? []
   const laneData = laps.map((lap, i) => ({
@@ -59,7 +102,81 @@ export function ActivityDetailModal({
         {detail && laneData.length === 0 && (
           <p className="hero-note">Ingen lap-data registrert for denne aktiviteten.</p>
         )}
+
+        <div className="hero-label" style={{ marginTop: 20, marginBottom: 8 }}>
+          Hvordan følte du deg på denne økta?
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <label>
+            <div className="tt-label" style={{ marginBottom: 4 }}>
+              Følelse
+            </div>
+            <select
+              value={feeling}
+              onChange={(e) => setFeeling(e.target.value as Feeling)}
+              style={{
+                width: '100%',
+                padding: '8px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--page)',
+                color: 'var(--text-primary)',
+                font: 'inherit',
+              }}
+            >
+              {FEELINGS.map((f) => (
+                <option key={f} value={f}>
+                  {FEELING_LABEL[f]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <div className="tt-label" style={{ marginBottom: 4 }}>
+              Anstrengelse (RPE {rpe}/10)
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={10}
+              value={rpe}
+              onChange={(e) => setRpe(Number(e.target.value))}
+              style={{ width: '100%' }}
+            />
+          </label>
+          <label>
+            <div className="tt-label" style={{ marginBottom: 4 }}>
+              Kommentar
+            </div>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+              placeholder="Beina tunge? Pusten grei? Noe å huske til neste gang?"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid var(--border)',
+                background: 'var(--page)',
+                color: 'var(--text-primary)',
+                font: 'inherit',
+                resize: 'vertical',
+              }}
+            />
+          </label>
+        </div>
+
         <div className="modal-actions" style={{ marginTop: 16 }}>
+          {journalStatus === 'saved' && <span className="hero-note">Lagret ✓</span>}
+          {journalStatus === 'error' && <span className="sync-status error">{journalError}</span>}
+          <button
+            className="button-primary"
+            onClick={handleSaveJournal}
+            disabled={journalStatus === 'saving' || journalStatus === 'loading'}
+          >
+            {journalStatus === 'saving' ? 'Lagrer…' : 'Lagre notat'}
+          </button>
           <button className="button-secondary" onClick={onClose}>
             Lukk
           </button>

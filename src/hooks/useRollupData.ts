@@ -5,6 +5,7 @@ import type {
   LatestRollup,
   RacePredictionPoint,
   RecoveryPoint,
+  SessionTypeTrends,
   TrainingPlan,
   TrainingStatusPoint,
   Vo2MaxPoint,
@@ -20,6 +21,7 @@ export interface RollupData {
   trainingStatus: TrainingStatusPoint[]
   activities: ActivitySummary[]
   plan: TrainingPlan | null
+  sessionTypeTrends: SessionTypeTrends | null
 }
 
 interface State {
@@ -48,13 +50,29 @@ export function useRollupData() {
           fetchRepoJson<TrainingStatusPoint[]>('data/rollups/training_status_history.json'),
           fetchRepoJson<ActivitySummary[]>('data/rollups/activities.json'),
         ])
-      // Plan may not exist yet (before the first generate_plan.yml run) — treat 404 as "no plan".
-      const plan = await fetchRepoJson<TrainingPlan>('data/ai/plan.json').catch((err) => {
-        if (err instanceof GitHubApiError && err.status === 404) return null
-        throw err
-      })
+      // Plan/session-type trends may not exist yet on a fresh setup — treat 404 as "none yet".
+      const [plan, sessionTypeTrends] = await Promise.all([
+        fetchRepoJson<TrainingPlan>('data/ai/plan.json').catch((err) => {
+          if (err instanceof GitHubApiError && err.status === 404) return null
+          throw err
+        }),
+        fetchRepoJson<SessionTypeTrends>('data/rollups/session_type_trends.json').catch((err) => {
+          if (err instanceof GitHubApiError && err.status === 404) return null
+          throw err
+        }),
+      ])
       setState({
-        data: { latest, vo2max, racePredictions, weeklyVolume, recovery, trainingStatus, activities, plan },
+        data: {
+          latest,
+          vo2max,
+          racePredictions,
+          weeklyVolume,
+          recovery,
+          trainingStatus,
+          activities,
+          plan,
+          sessionTypeTrends,
+        },
         loading: false,
         error: null,
       })

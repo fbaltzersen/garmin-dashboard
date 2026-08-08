@@ -1,25 +1,11 @@
 import { useState } from 'react'
-import { fetchRepoJson, GitHubApiError, writeRepoJson } from '../api/github'
-import type { JournalEntry } from '../types'
+import { upsertJournalEntry } from '../api/journal'
+import { FEELINGS, FEELING_LABEL, type Feeling } from '../journalOptions'
 import { Panel } from './Panel'
-
-const FEELINGS = ['bra', 'ok', 'slitent', 'smerte', 'motivert'] as const
-const FEELING_LABEL: Record<(typeof FEELINGS)[number], string> = {
-  bra: 'Bra',
-  ok: 'Grei',
-  slitent: 'Slitent',
-  smerte: 'Smerte/vondt',
-  motivert: 'Motivert',
-}
-
-interface DayJournal {
-  date: string
-  entries: JournalEntry[]
-}
 
 export function JournalForm() {
   const [rpe, setRpe] = useState(5)
-  const [feeling, setFeeling] = useState<(typeof FEELINGS)[number]>('ok')
+  const [feeling, setFeeling] = useState<Feeling>('ok')
   const [note, setNote] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -27,31 +13,28 @@ export function JournalForm() {
   async function handleSubmit() {
     setStatus('saving')
     setError(null)
-    const today = new Date().toISOString().slice(0, 10)
-    const path = `data/journal/${today}.json`
     try {
-      const existing = await fetchRepoJson<DayJournal>(path).catch((err) => {
-        if (err instanceof GitHubApiError && err.status === 404) return { date: today, entries: [] }
-        throw err
-      })
-      const entry: JournalEntry = {
+      const today = new Date().toISOString().slice(0, 10)
+      await upsertJournalEntry(today, {
         created_at: new Date().toISOString(),
         rpe,
         feeling,
         note: note.trim(),
-      }
-      const updated: DayJournal = { date: today, entries: [...existing.entries, entry] }
-      await writeRepoJson(path, updated, `journal: ${today}`)
+      })
       setStatus('saved')
       setNote('')
     } catch (err) {
       setStatus('error')
-      setError(err instanceof GitHubApiError ? err.message : 'Kunne ikke lagre')
+      setError(err instanceof Error ? err.message : 'Kunne ikke lagre')
     }
   }
 
   return (
-    <Panel title="Logg dagens økt">
+    <Panel title="Logg dagen (uten en spesifikk økt)">
+      <p className="hero-note" style={{ marginBottom: 12 }}>
+        For hviledager, sykdom eller annet som ikke er knyttet til en Garmin-registrert økt. For å
+        logge en gjennomført økt, klikk på økten i "Siste aktiviteter" under.
+      </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
         <label>
           <div className="hero-label" style={{ marginBottom: 4 }}>
@@ -59,7 +42,7 @@ export function JournalForm() {
           </div>
           <select
             value={feeling}
-            onChange={(e) => setFeeling(e.target.value as (typeof FEELINGS)[number])}
+            onChange={(e) => setFeeling(e.target.value as Feeling)}
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -100,7 +83,7 @@ export function JournalForm() {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
-            placeholder="Hvordan kjentes økta? Noe å notere til neste ukes plan?"
+            placeholder="Hvordan var dagen? Noe å notere til neste ukes plan?"
             style={{
               width: '100%',
               padding: '10px 12px',
