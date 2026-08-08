@@ -1,3 +1,12 @@
+export type AcwrRiskBand = 'low' | 'optimal' | 'elevated' | 'high' | 'insufficient_data'
+
+export interface AcwrRollup {
+  value: number | null
+  acute_km_7d: number
+  chronic_avg_km_28d: number
+  risk_band: AcwrRiskBand
+}
+
 export interface LatestRollup {
   generated_at: string | null
   goal: { event: string; target_seconds: number }
@@ -11,6 +20,7 @@ export interface LatestRollup {
   weekly_volume_km_last_7d: number | null
   last_activity_date: string | null
   lactate_threshold: { heart_rate: number | null; speed_mps: number | null } | null
+  acwr: AcwrRollup | null
   last_sync_utc: string | null
 }
 
@@ -59,6 +69,9 @@ export interface ActivitySummary {
   duration_min: number
   avg_hr: number | null
   garmin_note?: string | null
+  elevation_gain_m?: number | null
+  cadence_spm?: number | null
+  temperature_c?: number | null
 }
 
 export interface ActivityLap {
@@ -102,6 +115,8 @@ export interface TrainingPlan {
   }
   race_prediction: {
     current_5k_seconds: number
+    range_low_seconds: number
+    range_high_seconds: number
     estimated_weeks_to_goal: number
     confidence: 'high' | 'medium' | 'low'
     reasoning: string
@@ -124,6 +139,8 @@ export interface SessionTypePoint {
   date: string
   activity_id: number
   pace_min_per_km: number
+  grade_adjusted_pace_min_per_km?: number | null
+  elevation_gain_m?: number | null
   avg_hr: number | null
   distance_km: number
 }
@@ -133,5 +150,29 @@ export type SessionTypeTrends = Record<CompletedSessionType, SessionTypePoint[]>
 export interface AiRacePredictionPoint {
   date: string
   seconds: number | null
+  range_low_seconds?: number | null
+  range_high_seconds?: number | null
   confidence: 'high' | 'medium' | 'low' | null
+}
+
+export type AdherenceStatus = 'completed' | 'partial' | 'missed' | 'rest_broken'
+
+export interface AdherenceEntry {
+  date: string
+  planned_type: SessionType
+  planned_title: string
+  planned_distance_km: number
+  actual_distance_km: number
+  status: AdherenceStatus
+}
+
+export interface DashboardBundle {
+  latest: LatestRollup
+  vo2max_trend: Vo2MaxPoint[]
+  race_predictions_trend: RacePredictionPoint[]
+  weekly_volume: WeeklyVolumePoint[]
+  recovery_trend: RecoveryPoint[]
+  training_status_history: TrainingStatusPoint[]
+  activities: ActivitySummary[]
+  session_type_trends: SessionTypeTrends
 }

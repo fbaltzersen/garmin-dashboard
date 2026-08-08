@@ -5,4 +5,17 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: '/garmin-dashboard/',
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Vendor code (react, recharts) changes far less often than app code -
+        // splitting it out means a deploy that only touches app code doesn't
+        // force browsers to re-download the ~180KB vendor chunk they already have.
+        manualChunks(id: string) {
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) return 'charts'
+          if (id.includes('node_modules/react')) return 'vendor'
+        },
+      },
+    },
+  },
 })

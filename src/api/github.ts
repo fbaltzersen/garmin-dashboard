@@ -21,6 +21,9 @@ export function setToken(token: string): void {
 
 export function clearToken(): void {
   localStorage.removeItem(PAT_STORAGE_KEY)
+  Object.keys(sessionStorage)
+    .filter((k) => k.startsWith(CACHE_PREFIX))
+    .forEach((k) => sessionStorage.removeItem(k))
 }
 
 async function githubFetch(path: string, init?: RequestInit): Promise<Response> {
@@ -59,11 +62,35 @@ async function githubFetch(path: string, init?: RequestInit): Promise<Response> 
   return res
 }
 
+const CACHE_PREFIX = 'gd_cache:'
+
+/** Best-effort read of the last successful response for `path` - used for an
+ * instant first paint on repeat visits (stale-while-revalidate). A miss or a
+ * disabled/full sessionStorage is not an error, just means no cached paint. */
+export function readCachedJson<T>(path: string): T | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_PREFIX + path)
+    return raw ? (JSON.parse(raw) as T) : null
+  } catch {
+    return null
+  }
+}
+
+function writeCachedJson(path: string, data: unknown): void {
+  try {
+    sessionStorage.setItem(CACHE_PREFIX + path, JSON.stringify(data))
+  } catch {
+    // quota exceeded or storage disabled - caching is a pure optimization
+  }
+}
+
 export async function fetchRepoJson<T>(path: string): Promise<T> {
   const res = await githubFetch(`/repos/${OWNER}/${DATA_REPO}/contents/${path}`, {
     headers: { Accept: 'application/vnd.github.raw+json' },
   })
-  return res.json() as Promise<T>
+  const data = (await res.json()) as T
+  writeCachedJson(path, data)
+  return data
 }
 
 export async function fetchActivityDetail<T>(date: string, activityId: number): Promise<T> {

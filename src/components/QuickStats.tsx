@@ -1,7 +1,24 @@
-import type { LatestRollup } from '../types'
+import type { AcwrRiskBand, LatestRollup } from '../types'
 import { formatDate } from '../utils/format'
 
+const ACWR_LABEL: Record<AcwrRiskBand, string> = {
+  low: 'Lav belastning',
+  optimal: 'Optimal sone',
+  elevated: 'Forhøyet risiko',
+  high: 'Høy risiko',
+  insufficient_data: 'For lite data',
+}
+
+const ACWR_COLOR: Record<AcwrRiskBand, string> = {
+  low: 'var(--status-neutral)',
+  optimal: 'var(--status-good)',
+  elevated: 'var(--status-warning)',
+  high: 'var(--status-critical)',
+  insufficient_data: 'var(--status-neutral)',
+}
+
 export function QuickStats({ latest }: { latest: LatestRollup }) {
+  const acwr = latest.acwr
   return (
     <div className="stat-row">
       <div className="stat-tile">
@@ -19,6 +36,13 @@ export function QuickStats({ latest }: { latest: LatestRollup }) {
         <span className="value tabular">
           {latest.lactate_threshold?.heart_rate ? `${latest.lactate_threshold.heart_rate} bpm` : '—'}
         </span>
+      </div>
+      <div className="stat-tile">
+        <span className="label">Belastning (7d/28d-snitt)</span>
+        <span className="value tabular" style={{ color: acwr ? ACWR_COLOR[acwr.risk_band] : undefined }}>
+          {acwr?.value != null ? acwr.value.toFixed(2) : '—'}
+        </span>
+        <span className="label">{acwr ? ACWR_LABEL[acwr.risk_band] : '—'}</span>
       </div>
       <div className="stat-tile">
         <span className="label">Sist synket</span>

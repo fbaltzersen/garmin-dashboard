@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import './App.css'
 import { clearToken, getToken } from './api/github'
 import { useRollupData } from './hooks/useRollupData'
@@ -11,9 +11,14 @@ import { TrainingStatusStrip } from './components/TrainingStatusStrip'
 import { WeeklyVolumeChart } from './components/WeeklyVolumeChart'
 import { ActivityTable } from './components/ActivityTable'
 import { RecoveryPanel } from './components/RecoveryPanel'
-import { PlanPanel } from './components/PlanPanel'
 import { SessionTypeProgressionPanel } from './components/SessionTypeProgressionPanel'
 import { LatestActivityCard } from './components/LatestActivityCard'
+
+// Only needed when the user opens "Planlegging" - kept out of the initial bundle.
+const PlanPanel = lazy(() => import('./components/PlanPanel').then((m) => ({ default: m.PlanPanel })))
+const AdherencePanel = lazy(() =>
+  import('./components/AdherencePanel').then((m) => ({ default: m.AdherencePanel })),
+)
 
 type Tab = 'progresjon' | 'planlegging'
 
@@ -89,12 +94,20 @@ function App() {
               </div>
               <WeeklyVolumeChart data={data.weeklyVolume} />
               <ActivityTable activities={data.activities} />
-              <SessionTypeProgressionPanel data={data.sessionTypeTrends} />
+              <SessionTypeProgressionPanel
+                data={data.sessionTypeTrends}
+                lthrBpm={data.latest.lactate_threshold?.heart_rate ?? null}
+              />
               <RecoveryPanel data={data.recovery} />
             </>
           )}
 
-          {tab === 'planlegging' && <PlanPanel plan={data.plan} onSuccess={reload} />}
+          {tab === 'planlegging' && (
+            <Suspense fallback={<p className="hero-note">Laster…</p>}>
+              <PlanPanel plan={data.plan} onSuccess={reload} />
+              <AdherencePanel entries={data.adherence} />
+            </Suspense>
+          )}
         </>
       )}
     </div>
