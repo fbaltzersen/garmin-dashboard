@@ -1,6 +1,7 @@
-import type { ActivitySummary, SessionType, TrainingPlan, WeeklyPlanDay } from '../types'
+import type { ActivitySummary, SessionType, TrainingPlan } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
+import { computeDayStatus, type DayStatus } from '../utils/adherence'
 
 const SESSION_LABEL: Record<SessionType, string> = {
   hvile: 'Hvile',
@@ -9,8 +10,6 @@ const SESSION_LABEL: Record<SessionType, string> = {
   terskel: 'Terskel',
   langtur: 'Langtur',
 }
-
-type DayStatus = 'completed' | 'partial' | 'missed' | 'rest_broken' | 'upcoming'
 
 const STATUS_ICON: Record<DayStatus, string> = {
   completed: '✓',
@@ -71,25 +70,21 @@ export function WeekSummaryPanel({
 
   const weekDays = (plan?.daily_plan ?? []).filter((d) => d.date >= weekStart && d.date <= weekEnd)
 
-  const kmByDate = new Map<string, number>()
+  const activitiesByDate = new Map<string, ActivitySummary[]>()
+  const runningKmByDate = new Map<string, number>()
   for (const a of activities) {
-    if (a.date < weekStart || a.date > weekEnd || !a.counts_as_running) continue
-    kmByDate.set(a.date, (kmByDate.get(a.date) ?? 0) + (a.distance_km || 0))
+    if (a.date < weekStart || a.date > weekEnd) continue
+    activitiesByDate.set(a.date, [...(activitiesByDate.get(a.date) ?? []), a])
+    if (a.counts_as_running) {
+      runningKmByDate.set(a.date, (runningKmByDate.get(a.date) ?? 0) + (a.distance_km || 0))
+    }
   }
 
-  function statusFor(day: WeeklyPlanDay): DayStatus {
-    if (day.date > todayIso) return 'upcoming'
-    const dayKm = kmByDate.get(day.date) ?? 0
-    const didRun = dayKm > 0
-    if (day.session_type === 'hvile') return didRun ? 'rest_broken' : 'completed'
-    if (!didRun) return 'missed'
-    if (day.target_distance_km > 0 && dayKm < day.target_distance_km * 0.6) return 'partial'
-    return 'completed'
-  }
-
-  const runningKmThisWeek = [...kmByDate.values()].reduce((a, b) => a + b, 0)
   const dueSoFar = weekDays.filter((d) => d.date <= todayIso)
-  const completedSoFar = dueSoFar.filter((d) => statusFor(d) === 'completed').length
+  const completedSoFar = dueSoFar.filter(
+    (d) => computeDayStatus(d, activitiesByDate.get(d.date) ?? [], d.date > todayIso) === 'completed',
+  ).length
+  const runningKmThisWeek = [...runningKmByDate.values()].reduce((a, b) => a + b, 0)
 
   return (
     <Panel title={`Denne uken (${formatDate(weekStart)} – ${formatDate(weekEnd)})`}>
@@ -124,8 +119,8 @@ export function WeekSummaryPanel({
               </thead>
               <tbody>
                 {weekDays.map((d) => {
-                  const status = statusFor(d)
-                  const actualKm = kmByDate.get(d.date) ?? 0
+                  const status = computeDayStatus(d, activitiesByDate.get(d.date) ?? [], d.date > todayIso)
+                  const actualKm = runningKmByDate.get(d.date) ?? 0
                   return (
                     <tr key={d.date} style={{ cursor: 'default' }}>
                       <td>

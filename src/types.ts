@@ -73,6 +73,7 @@ export interface ActivitySummary {
   cadence_spm?: number | null
   temperature_c?: number | null
   counts_as_running?: boolean
+  classified_session_type?: CompletedSessionType | null
 }
 
 export interface ActivityLap {

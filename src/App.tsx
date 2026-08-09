@@ -107,7 +107,7 @@ function App() {
           {tab === 'planlegging' && (
             <Suspense fallback={<p className="hero-note">Laster…</p>}>
               <PlanPanel plan={data.plan} onSuccess={reload} />
-              <AdherencePanel entries={data.adherence} />
+              <AdherencePanel entries={data.adherence} plan={data.plan} activities={data.activities} />
             </Suspense>
           )}
         </>
