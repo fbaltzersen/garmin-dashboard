@@ -1,6 +1,8 @@
-import type { SessionType, TrainingPlan } from '../types'
+import { useState } from 'react'
+import type { SessionType, TrainingPlan, WeeklyPlanDay } from '../types'
 import { Panel } from './Panel'
 import { GeneratePlanButton } from './GeneratePlanButton'
+import { PlanDayDetailModal } from './PlanDayDetailModal'
 import { formatDate, formatSecondsAsClock } from '../utils/format'
 
 const SESSION_LABEL: Record<SessionType, string> = {
@@ -26,6 +28,8 @@ const CONFIDENCE_LABEL: Record<TrainingPlan['race_prediction']['confidence'], st
 }
 
 export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSuccess: () => void }) {
+  const [selectedDay, setSelectedDay] = useState<WeeklyPlanDay | null>(null)
+
   return (
     <Panel title="AI-treningsplan">
       <div className="app-header-actions" style={{ marginBottom: 16 }}>
@@ -36,10 +40,11 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
 
       {plan && (
         <>
-          <div className="hero-label" style={{ marginBottom: 8 }}>
+          <div className="hero-label" style={{ marginBottom: 4 }}>
             {formatDate(plan.plan_start_date)} – {formatDate(plan.plan_end_date)} · generert{' '}
             {formatDate(plan.generated_at)}
           </div>
+          <p className="hero-note" style={{ marginBottom: 8 }}>Trykk på en økt for detaljer (øktoppsett, forventet følelse).</p>
 
           <div className="table-scroll" style={{ marginBottom: 20 }}>
             <table className="activity-table plan-table">
@@ -54,7 +59,7 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
               </thead>
               <tbody>
                 {plan.daily_plan.map((d) => (
-                  <tr key={d.date} style={{ cursor: 'default' }} title={d.rationale}>
+                  <tr key={d.date} onClick={() => setSelectedDay(d)}>
                     <td>
                       {d.day} <span className="tt-label">{formatDate(d.date)}</span>
                     </td>
@@ -115,6 +120,7 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
           <p style={{ fontSize: 14, lineHeight: 1.6 }}>{plan.coaching_notes}</p>
         </>
       )}
+      {selectedDay && <PlanDayDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} />}
     </Panel>
   )
 }

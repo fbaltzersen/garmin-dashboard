@@ -47,8 +47,21 @@ async function githubFetch(path: string, init?: RequestInit): Promise<Response> 
         res.status,
       )
     }
-    clearToken()
-    throw new GitHubApiError('PAT is invalid or expired', res.status)
+    if (res.status === 401) {
+      // Truly bad/expired credentials - only case where wiping the stored
+      // PAT and forcing re-entry is the right move.
+      clearToken()
+      throw new GitHubApiError('PAT is invalid or expired', res.status)
+    }
+    // 403 here is virtually always a scope problem, not a bad token (reads
+    // can succeed with Contents: Read-only while writes then 403) - clearing
+    // the token in this case would log the user out of a token that still
+    // works fine for everything else. Leave it in place.
+    throw new GitHubApiError(
+      'Tilgang nektet (403). Sjekk at PAT-en har "Contents: Read and write" for ' +
+        `${OWNER}/${DATA_REPO} under github.com/settings/tokens, og at den ikke er utløpt.`,
+      res.status,
+    )
   }
   if (res.status === 404) {
     throw new GitHubApiError(

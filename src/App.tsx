@@ -13,6 +13,7 @@ import { ActivityTable } from './components/ActivityTable'
 import { RecoveryPanel } from './components/RecoveryPanel'
 import { SessionTypeProgressionPanel } from './components/SessionTypeProgressionPanel'
 import { LatestActivityCard } from './components/LatestActivityCard'
+import { WeekSummaryPanel } from './components/WeekSummaryPanel'
 
 // Only needed when the user opens "Planlegging" - kept out of the initial bundle.
 const PlanPanel = lazy(() => import('./components/PlanPanel').then((m) => ({ default: m.PlanPanel })))
@@ -84,6 +85,7 @@ function App() {
 
           {tab === 'progresjon' && (
             <>
+              <WeekSummaryPanel plan={data.plan} activities={data.activities} />
               <GoalPanel latest={data.latest} plan={data.plan} trend={data.aiRacePredictionTrend} />
               <div className="panel">
                 <QuickStats latest={data.latest} />

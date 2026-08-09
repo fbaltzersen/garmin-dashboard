@@ -72,6 +72,7 @@ export interface ActivitySummary {
   elevation_gain_m?: number | null
   cadence_spm?: number | null
   temperature_c?: number | null
+  counts_as_running?: boolean
 }
 
 export interface ActivityLap {
@@ -90,6 +91,13 @@ export interface ActivityDetail {
 
 export type SessionType = 'hvile' | 'rolig' | 'intervall' | 'terskel' | 'langtur'
 
+export interface PlanInterval {
+  label: string
+  target_pace: string
+  target_hr: string
+  duration_or_distance: string
+}
+
 export interface WeeklyPlanDay {
   day: string
   date: string
@@ -98,6 +106,8 @@ export interface WeeklyPlanDay {
   target_distance_km: number
   target_duration_min: number
   target_effort: string
+  expected_feeling?: string
+  intervals?: PlanInterval[]
   rationale: string
 }
 

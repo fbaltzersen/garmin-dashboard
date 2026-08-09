@@ -2,6 +2,18 @@
   max-width: 1100px;
   margin: 0 auto;
   padding: 24px 20px 64px;
+  /* Hard backstop: nothing inside (charts especially) should be able to
+     force the whole page wider than the viewport and zoom mobile out. */
+  overflow-x: hidden;
+}
+
+/* Grid/flex items default to min-width:auto, which sizes them to their
+   content's intrinsic width - a Recharts SVG's intrinsic width can exceed
+   its column, which otherwise pushes .panel-grid, .app and the whole page
+   wider instead of letting the chart shrink to fit. */
+.panel-grid > *,
+.panel {
+  min-width: 0;
 }
 
 .app-header {
