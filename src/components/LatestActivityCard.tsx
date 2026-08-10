@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Activity, Footprints, Gauge, Heart, MessageSquareQuote } from 'lucide-react'
 import { fetchJournalEntryForActivity, upsertJournalEntry } from '../api/journal'
 import { FEELINGS, FEELING_LABEL, type Feeling } from '../journalOptions'
 import type { ActivitySummary } from '../types'
@@ -57,62 +58,78 @@ export function LatestActivityCard({ activity }: { activity: ActivitySummary | n
 
   if (!activity) {
     return (
-      <Panel title="Siste økt">
+      <Panel title="Siste økt" icon={Activity}>
         <p className="hero-note">Ingen aktiviteter registrert ennå.</p>
       </Panel>
     )
   }
 
   return (
-    <Panel title="Siste økt">
+    <Panel title="Siste økt" icon={Activity}>
       <div className="hero-label" style={{ marginBottom: 4 }}>
         {formatDate(activity.date)}
       </div>
-      <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 4 }}>
+      <div style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 700, marginBottom: 10 }}>
         {activity.name ?? activity.type ?? 'Aktivitet'}
       </div>
-      <p style={{ marginBottom: 12 }}>
-        {activity.distance_km.toFixed(2)} km · {formatPaceMinPerKm(activity.distance_km, activity.duration_min)}
-        {activity.avg_hr ? ` · ${activity.avg_hr} bpm snitt` : ''}
-      </p>
+
+      <div className="inline-stat-row" style={{ marginBottom: 14 }}>
+        <span className="inline-stat">
+          <Footprints />
+          <strong className="tabular">{activity.distance_km.toFixed(2)} km</strong>
+        </span>
+        <span className="inline-stat">
+          <Gauge />
+          <strong className="tabular">{formatPaceMinPerKm(activity.distance_km, activity.duration_min)}</strong>
+        </span>
+        {activity.avg_hr && (
+          <span className="inline-stat">
+            <Heart />
+            <strong className="tabular">{activity.avg_hr} bpm</strong>
+          </span>
+        )}
+      </div>
 
       {activity.garmin_note && (
-        <div style={{ marginBottom: 16 }}>
-          <div className="tt-label" style={{ marginBottom: 4 }}>
-            Merknad fra Garmin
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            marginBottom: 16,
+            padding: '10px 12px',
+            background: 'var(--surface-2)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          <MessageSquareQuote style={{ width: 16, height: 16, color: 'var(--series-blue)', flex: 'none', marginTop: 2 }} />
+          <div>
+            <div className="tt-label" style={{ marginBottom: 2 }}>
+              Merknad fra Garmin
+            </div>
+            <p style={{ fontStyle: 'italic', margin: 0 }}>{activity.garmin_note}</p>
           </div>
-          <p style={{ fontStyle: 'italic' }}>{activity.garmin_note}</p>
         </div>
       )}
 
-      <div className="hero-label" style={{ marginBottom: 8 }}>
-        Hvordan følte du deg?
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 480 }}>
-        <label>
-          <div className="tt-label" style={{ marginBottom: 4 }}>
+      <div className="field-label">Hvordan følte du deg?</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}>
+        <div>
+          <div className="tt-label" style={{ marginBottom: 6 }}>
             Følelse
           </div>
-          <select
-            value={feeling}
-            onChange={(e) => setFeeling(e.target.value as Feeling)}
-            style={{
-              width: '100%',
-              padding: '8px 12px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              background: 'var(--page)',
-              color: 'var(--text-primary)',
-              font: 'inherit',
-            }}
-          >
+          <div className="pill-group">
             {FEELINGS.map((f) => (
-              <option key={f} value={f}>
+              <button
+                key={f}
+                type="button"
+                className={`pill-choice ${feeling === f ? 'active' : ''}`}
+                onClick={() => setFeeling(f)}
+              >
                 {FEELING_LABEL[f]}
-              </option>
+              </button>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
         <label>
           <div className="tt-label" style={{ marginBottom: 4 }}>
             Anstrengelse (RPE {rpe}/10)
@@ -138,7 +155,7 @@ export function LatestActivityCard({ activity }: { activity: ActivitySummary | n
             style={{
               width: '100%',
               padding: '10px 12px',
-              borderRadius: 8,
+              borderRadius: 'var(--radius-sm)',
               border: '1px solid var(--border)',
               background: 'var(--page)',
               color: 'var(--text-primary)',

@@ -1,3 +1,4 @@
+import { Activity } from 'lucide-react'
 import type { TrainingStatusPoint } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
@@ -33,7 +34,7 @@ function colorFor(status: string): string {
 export function TrainingStatusStrip({ data }: { data: TrainingStatusPoint[] }) {
   if (data.length === 0) {
     return (
-      <Panel title="Treningsstatus">
+      <Panel title="Treningsstatus" icon={Activity}>
         <p className="hero-note">Ingen treningsstatus registrert ennå.</p>
       </Panel>
     )
@@ -44,7 +45,7 @@ export function TrainingStatusStrip({ data }: { data: TrainingStatusPoint[] }) {
   const last = data[data.length - 1].date
 
   return (
-    <Panel title="Treningsstatus">
+    <Panel title="Treningsstatus" icon={Activity}>
       <div className="status-strip">
         {data.map((d) => (
           <div

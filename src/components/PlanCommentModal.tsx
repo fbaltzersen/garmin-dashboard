@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { MessageSquarePlus } from 'lucide-react'
 
 export function PlanCommentModal({
   onSubmit,
@@ -9,9 +11,24 @@ export function PlanCommentModal({
 }) {
   const [note, setNote] = useState('')
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={onCancel}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 'var(--radius-md)',
+            background: 'color-mix(in srgb, var(--series-blue) 16%, transparent)',
+            color: 'var(--series-blue)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}
+        >
+          <MessageSquarePlus style={{ width: 20, height: 20 }} />
+        </div>
         <h2>Kommentar til planen?</h2>
         <p>
           Noe du vil at AI skal ta hensyn til denne gangen, utover det dataen viser? Valgfritt —
@@ -23,17 +40,7 @@ export function PlanCommentModal({
           rows={3}
           autoFocus
           placeholder="F.eks. «beina er tunge etter i går» eller «hopp over intervaller denne uka»"
-          style={{
-            width: '100%',
-            padding: '10px 12px',
-            borderRadius: 8,
-            border: '1px solid var(--border)',
-            background: 'var(--page)',
-            color: 'var(--text-primary)',
-            font: 'inherit',
-            resize: 'vertical',
-            margin: '12px 0',
-          }}
+          style={{ margin: '12px 0', resize: 'vertical' }}
         />
         <div className="modal-actions">
           <button className="button-secondary" onClick={() => onSubmit('')}>
@@ -44,6 +51,7 @@ export function PlanCommentModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

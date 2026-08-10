@@ -1,9 +1,21 @@
 import type { ReactNode } from 'react'
+import type { LucideIcon } from 'lucide-react'
 
-export function Panel({ title, children }: { title: string; children: ReactNode }) {
+export function Panel({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string
+  icon?: LucideIcon
+  children: ReactNode
+}) {
   return (
     <section className="panel">
-      <div className="panel-title">{title}</div>
+      <div className="panel-title">
+        {Icon && <Icon />}
+        <span>{title}</span>
+      </div>
       {children}
     </section>
   )

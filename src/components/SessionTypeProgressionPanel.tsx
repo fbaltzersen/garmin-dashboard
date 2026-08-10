@@ -8,10 +8,12 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { LineChart as LineChartIcon } from 'lucide-react'
 import type { CompletedSessionType, SessionTypePoint, SessionTypeTrends } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
 import { computeHrZones, type HrZone } from '../utils/hrZones'
+import { SESSION_ICON } from '../uiMeta'
 
 const TYPE_LABEL: Record<CompletedSessionType, string> = {
   rolig: 'Rolige økter (sone 2)',
@@ -88,10 +90,12 @@ function TypeRow({
     : [0, 200]
   const targetBand = zones ? targetBandForType(type, zones, hrDomain) : null
   const anyActiveOnly = points.some((p) => p.active_only)
+  const TypeIcon = SESSION_ICON[type]
 
   return (
     <div style={{ marginBottom: 24 }}>
-      <div className="hero-label" style={{ marginBottom: 8 }}>
+      <div className="badge" style={{ marginBottom: 8, color: paceColor, fontSize: 14 }}>
+        <TypeIcon />
         {TYPE_LABEL[type]} ({points.length} økt{points.length === 1 ? '' : 'er'})
       </div>
       {points.length < 2 ? (
@@ -185,7 +189,7 @@ export function SessionTypeProgressionPanel({
   const zones = lthrBpm ? computeHrZones(lthrBpm) : null
 
   return (
-    <Panel title="Progresjon per øktype">
+    <Panel title="Progresjon per øktype" icon={LineChartIcon}>
       <p className="hero-note" style={{ marginBottom: 16 }}>
         Klassifisert automatisk fra Garmins egen treningseffekt-vurdering av hver økt. Tempo er
         stigningsjustert (+100 hm ≈ +1 km flatt) slik at en kupert langtur ikke ser ut som en flat

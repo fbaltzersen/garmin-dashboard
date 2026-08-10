@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Footprints } from 'lucide-react'
 import { fetchActivityDetail } from '../api/github'
 import { fetchJournalEntryForActivity, upsertJournalEntry } from '../api/journal'
 import { FEELINGS, FEELING_LABEL, type Feeling } from '../journalOptions'
@@ -69,9 +71,13 @@ export function ActivityDetailModal({
     avgHR: lap.averageHR,
   }))
 
-  return (
+  return createPortal(
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600 }}>
+        <div className="badge" style={{ color: 'var(--series-blue)', marginBottom: 6 }}>
+          <Footprints />
+          <span className="tt-label">Aktivitet</span>
+        </div>
         <h2>{activity.name ?? 'Aktivitet'}</h2>
         <p>
           {activity.distance_km} km · {activity.duration_min.toFixed(0)} min
@@ -81,20 +87,30 @@ export function ActivityDetailModal({
         {!detail && !error && <p className="hero-note">Laster splits…</p>}
         {laneData.length > 0 && (
           <>
-            <div className="hero-label" style={{ marginTop: 16 }}>
+            <div className="field-label" style={{ marginTop: 16 }}>
               Tempo per lap (min/km)
             </div>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={laneData} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="lapPaceFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--series-blue)" stopOpacity={1} />
+                    <stop offset="100%" stopColor="var(--series-blue)" stopOpacity={0.55} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke="var(--gridline)" vertical={false} />
                 <XAxis dataKey="lap" stroke="var(--baseline)" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
                 <YAxis stroke="var(--baseline)" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} width={44} />
                 <Tooltip
                   formatter={(v) => [`${Number(v).toFixed(2)} min/km`, 'Tempo']}
-                  contentStyle={{ background: 'var(--surface-1)', border: '1px solid var(--border)' }}
+                  contentStyle={{
+                    background: 'var(--surface-2)',
+                    border: '1px solid var(--border-strong)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
                   cursor={{ fill: 'var(--gridline)' }}
                 />
-                <Bar dataKey="paceMinPerKm" fill="var(--series-blue)" radius={[4, 4, 0, 0]} maxBarSize={24} />
+                <Bar dataKey="paceMinPerKm" fill="url(#lapPaceFill)" radius={[4, 4, 0, 0]} maxBarSize={24} />
               </BarChart>
             </ResponsiveContainer>
           </>
@@ -103,34 +119,27 @@ export function ActivityDetailModal({
           <p className="hero-note">Ingen lap-data registrert for denne aktiviteten.</p>
         )}
 
-        <div className="hero-label" style={{ marginTop: 20, marginBottom: 8 }}>
+        <div className="field-label" style={{ marginTop: 20, marginBottom: 8 }}>
           Hvordan følte du deg på denne økta?
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <label>
-            <div className="tt-label" style={{ marginBottom: 4 }}>
+          <div>
+            <div className="tt-label" style={{ marginBottom: 6 }}>
               Følelse
             </div>
-            <select
-              value={feeling}
-              onChange={(e) => setFeeling(e.target.value as Feeling)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--page)',
-                color: 'var(--text-primary)',
-                font: 'inherit',
-              }}
-            >
+            <div className="pill-group">
               {FEELINGS.map((f) => (
-                <option key={f} value={f}>
+                <button
+                  key={f}
+                  type="button"
+                  className={`pill-choice ${feeling === f ? 'active' : ''}`}
+                  onClick={() => setFeeling(f)}
+                >
                   {FEELING_LABEL[f]}
-                </option>
+                </button>
               ))}
-            </select>
-          </label>
+            </div>
+          </div>
           <label>
             <div className="tt-label" style={{ marginBottom: 4 }}>
               Anstrengelse (RPE {rpe}/10)
@@ -153,16 +162,7 @@ export function ActivityDetailModal({
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               placeholder="Beina tunge? Pusten grei? Noe å huske til neste gang?"
-              style={{
-                width: '100%',
-                padding: '10px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'var(--page)',
-                color: 'var(--text-primary)',
-                font: 'inherit',
-                resize: 'vertical',
-              }}
+              style={{ resize: 'vertical' }}
             />
           </label>
         </div>
@@ -182,6 +182,7 @@ export function ActivityDetailModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

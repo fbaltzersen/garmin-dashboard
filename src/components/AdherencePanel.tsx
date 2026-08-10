@@ -1,29 +1,9 @@
-import type { ActivitySummary, AdherenceEntry, AdherenceStatus, SessionType, TrainingPlan } from '../types'
+import { ClipboardCheck } from 'lucide-react'
+import type { ActivitySummary, AdherenceEntry, AdherenceStatus, TrainingPlan } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
 import { computeDayStatus } from '../utils/adherence'
-
-const STATUS_LABEL: Record<AdherenceStatus, string> = {
-  completed: 'Gjennomført',
-  partial: 'Delvis',
-  missed: 'Droppet',
-  rest_broken: 'Trente på hviledag',
-}
-
-const STATUS_COLOR: Record<AdherenceStatus, string> = {
-  completed: 'var(--status-good)',
-  partial: 'var(--status-warning)',
-  missed: 'var(--status-critical)',
-  rest_broken: 'var(--status-warning)',
-}
-
-const SESSION_LABEL: Record<SessionType, string> = {
-  hvile: 'Hvile',
-  rolig: 'Rolig',
-  intervall: 'Intervall',
-  terskel: 'Terskel',
-  langtur: 'Langtur',
-}
+import { SESSION_LABEL, STATUS_COLOR, STATUS_ICON, STATUS_LABEL } from '../uiMeta'
 
 function todayIsoLocal(): string {
   const d = new Date()
@@ -55,6 +35,8 @@ function liveTodayEntry(plan: TrainingPlan | null, activities: ActivitySummary[]
   }
 }
 
+const ADHERENCE_STATUSES: AdherenceStatus[] = ['completed', 'partial', 'missed', 'rest_broken']
+
 export function AdherencePanel({
   entries,
   plan,
@@ -70,7 +52,7 @@ export function AdherencePanel({
 
   if (allEntries.length === 0) {
     return (
-      <Panel title="Planetterlevelse (siste 14 dager)">
+      <Panel title="Planetterlevelse (siste 14 dager)" icon={ClipboardCheck}>
         <p className="hero-note">
           Ingen data ennå — dette fylles opp etter hvert som planlagte dager passerer og kan
           sammenlignes mot faktiske økter.
@@ -88,7 +70,7 @@ export function AdherencePanel({
   )
 
   return (
-    <Panel title="Planetterlevelse (siste 14 dager)">
+    <Panel title="Planetterlevelse (siste 14 dager)" icon={ClipboardCheck}>
       <p className="hero-note" style={{ marginBottom: 12 }}>
         Sammenligner det som faktisk ble foreskrevet *før* hver dag inntraff mot hva som ble
         gjennomført — ikke det planen sier i dag (som allerede kan være justert i etterkant).
@@ -97,17 +79,23 @@ export function AdherencePanel({
         oppdateres med en gang du synker en ny økt.
       </p>
       <div className="stat-row" style={{ marginBottom: 16 }}>
-        {(Object.keys(STATUS_LABEL) as AdherenceStatus[]).map((status) => (
-          <div className="stat-tile" key={status}>
-            <span className="label">{STATUS_LABEL[status]}</span>
-            <span className="value tabular" style={{ color: STATUS_COLOR[status] }}>
-              {counts[status] ?? 0}
-            </span>
-          </div>
-        ))}
+        {ADHERENCE_STATUSES.map((status) => {
+          const StatusIcon = STATUS_ICON[status]
+          return (
+            <div className="stat-tile" key={status}>
+              <div className="stat-tile-icon" style={{ color: STATUS_COLOR[status] }}>
+                <StatusIcon />
+              </div>
+              <span className="label">{STATUS_LABEL[status]}</span>
+              <span className="value tabular" style={{ color: STATUS_COLOR[status] }}>
+                {counts[status] ?? 0}
+              </span>
+            </div>
+          )
+        })}
       </div>
       <div className="table-scroll">
-        <table className="activity-table">
+        <table className="activity-table responsive-table">
           <thead>
             <tr>
               <th>Dato</th>
@@ -117,23 +105,31 @@ export function AdherencePanel({
             </tr>
           </thead>
           <tbody>
-            {[...allEntries].reverse().map((e) => (
-              <tr key={e.date} style={{ cursor: 'default' }}>
-                <td>
-                  {formatDate(e.date)}
-                  {e === live && <span className="tt-label"> (live)</span>}
-                </td>
-                <td>
-                  {SESSION_LABEL[e.planned_type]}
-                  {e.planned_title ? ` — ${e.planned_title}` : ''}
-                </td>
-                <td className="tabular">
-                  {e.planned_distance_km > 0 ? `${e.planned_distance_km} km` : '—'} /{' '}
-                  {e.actual_distance_km > 0 ? `${e.actual_distance_km} km` : '—'}
-                </td>
-                <td style={{ color: STATUS_COLOR[e.status] }}>{STATUS_LABEL[e.status]}</td>
-              </tr>
-            ))}
+            {[...allEntries].reverse().map((e) => {
+              const StatusIcon = STATUS_ICON[e.status]
+              return (
+                <tr key={e.date} style={{ cursor: 'default' }}>
+                  <td data-label="Dato">
+                    {formatDate(e.date)}
+                    {e === live && <span className="tt-label"> (live)</span>}
+                  </td>
+                  <td data-label="Planlagt">
+                    {SESSION_LABEL[e.planned_type]}
+                    {e.planned_title ? ` — ${e.planned_title}` : ''}
+                  </td>
+                  <td data-label="Distanse (plan / faktisk)" className="tabular">
+                    {e.planned_distance_km > 0 ? `${e.planned_distance_km} km` : '—'} /{' '}
+                    {e.actual_distance_km > 0 ? `${e.actual_distance_km} km` : '—'}
+                  </td>
+                  <td data-label="Status">
+                    <span className="badge" style={{ color: STATUS_COLOR[e.status] }}>
+                      <StatusIcon />
+                      {STATUS_LABEL[e.status]}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

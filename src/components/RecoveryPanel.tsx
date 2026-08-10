@@ -1,4 +1,15 @@
-import { Area, AreaChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { BatteryMedium, Heart, Moon, Sparkles } from 'lucide-react'
 import type { RecoveryPoint } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
@@ -27,18 +38,21 @@ export function RecoveryPanel({ data }: { data: RecoveryPoint[] }) {
 
   if (!showRhr && !showSleep && !showBodyBattery) {
     return (
-      <Panel title="Restitusjon">
+      <Panel title="Restitusjon" icon={Sparkles}>
         <p className="hero-note">Ingen restitusjonsdata (hvilepuls/søvn/body battery) registrert ennå.</p>
       </Panel>
     )
   }
 
   return (
-    <Panel title="Restitusjon (siste 90 dager)">
+    <Panel title="Restitusjon (siste 90 dager)" icon={Sparkles}>
       <div className="panel-grid">
         {showRhr && (
           <div>
-            <div className="hero-label">Hvilepuls</div>
+            <div className="hero-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Heart style={{ width: 14, height: 14, color: 'var(--series-orange)' }} />
+              Hvilepuls
+            </div>
             <ResponsiveContainer width="100%" height={140}>
               <LineChart data={recent} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
                 <CartesianGrid stroke="var(--gridline)" vertical={false} />
@@ -59,7 +73,10 @@ export function RecoveryPanel({ data }: { data: RecoveryPoint[] }) {
         )}
         {showSleep && (
           <div>
-            <div className="hero-label">Søvn (minutter)</div>
+            <div className="hero-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Moon style={{ width: 14, height: 14, color: 'var(--series-violet)' }} />
+              Søvn (minutter)
+            </div>
             <ResponsiveContainer width="100%" height={140}>
               <LineChart data={recent} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
                 <CartesianGrid stroke="var(--gridline)" vertical={false} />
@@ -80,9 +97,18 @@ export function RecoveryPanel({ data }: { data: RecoveryPoint[] }) {
         )}
         {showBodyBattery && (
           <div>
-            <div className="hero-label">Body Battery (høy)</div>
+            <div className="hero-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <BatteryMedium style={{ width: 14, height: 14, color: 'var(--series-aqua)' }} />
+              Body Battery (høy)
+            </div>
             <ResponsiveContainer width="100%" height={140}>
-              <AreaChart data={recent} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+              <ComposedChart data={recent} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="bodyBatteryFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--series-aqua)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="var(--series-aqua)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke="var(--gridline)" vertical={false} />
                 <XAxis dataKey="date" tickFormatter={formatDate} hide />
                 <YAxis stroke="var(--baseline)" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} width={44} />
@@ -91,12 +117,11 @@ export function RecoveryPanel({ data }: { data: RecoveryPoint[] }) {
                   type="monotone"
                   dataKey="body_battery_high"
                   stroke="var(--series-aqua)"
-                  fill="var(--series-aqua)"
-                  fillOpacity={0.1}
+                  fill="url(#bodyBatteryFill)"
                   strokeWidth={2}
                   connectNulls
                 />
-              </AreaChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         )}

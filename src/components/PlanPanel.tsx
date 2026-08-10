@@ -1,31 +1,17 @@
 import { useState } from 'react'
-import type { SessionType, TrainingPlan, WeeklyPlanDay } from '../types'
+import { CalendarDays, Gauge, NotebookPen } from 'lucide-react'
+import type { TrainingPlan, WeeklyPlanDay } from '../types'
 import { Panel } from './Panel'
 import { GeneratePlanButton } from './GeneratePlanButton'
 import { PlanDayDetailModal } from './PlanDayDetailModal'
 import { formatDate } from '../utils/format'
-
-const SESSION_LABEL: Record<SessionType, string> = {
-  hvile: 'Hvile',
-  rolig: 'Rolig',
-  intervall: 'Intervall',
-  terskel: 'Terskel',
-  langtur: 'Langtur',
-}
-
-const SESSION_COLOR: Record<SessionType, string> = {
-  hvile: 'var(--status-neutral)',
-  rolig: 'var(--seq-blue-350)',
-  langtur: 'var(--series-blue)',
-  terskel: 'var(--series-orange)',
-  intervall: 'var(--status-critical)',
-}
+import { SESSION_COLOR, SESSION_ICON, SESSION_LABEL } from '../uiMeta'
 
 export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSuccess: () => void }) {
   const [selectedDay, setSelectedDay] = useState<WeeklyPlanDay | null>(null)
 
   return (
-    <Panel title="AI-treningsplan">
+    <Panel title="AI-treningsplan" icon={CalendarDays}>
       <div className="app-header-actions" style={{ marginBottom: 16 }}>
         <GeneratePlanButton idleLabel={plan ? 'Generer ny plan' : 'Generer plan'} onSuccess={onSuccess} />
       </div>
@@ -44,7 +30,7 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
           </p>
 
           <div className="table-scroll" style={{ marginBottom: 20 }}>
-            <table className="activity-table plan-table">
+            <table className="activity-table plan-table responsive-table">
               <thead>
                 <tr>
                   <th>Dag</th>
@@ -55,31 +41,36 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
                 </tr>
               </thead>
               <tbody>
-                {plan.daily_plan.map((d) => (
-                  <tr key={d.date} onClick={() => setSelectedDay(d)}>
-                    <td>
-                      {d.day} <span className="tt-label">{formatDate(d.date)}</span>
-                    </td>
-                    <td>
-                      <span
-                        className="status-swatch"
-                        style={{ background: SESSION_COLOR[d.session_type], display: 'inline-block', marginRight: 6 }}
-                      />
-                      {SESSION_LABEL[d.session_type]}
-                    </td>
-                    <td>{d.title}</td>
-                    <td className="tabular">
-                      {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'}
-                    </td>
-                    <td>{d.target_effort}</td>
-                  </tr>
-                ))}
+                {plan.daily_plan.map((d) => {
+                  const SessionIcon = SESSION_ICON[d.session_type]
+                  return (
+                    <tr key={d.date} onClick={() => setSelectedDay(d)}>
+                      <td data-label="Dag">
+                        {d.day} <span className="tt-label">{formatDate(d.date)}</span>
+                      </td>
+                      <td data-label="Type">
+                        <span className="badge" style={{ color: SESSION_COLOR[d.session_type] }}>
+                          <SessionIcon />
+                          {SESSION_LABEL[d.session_type]}
+                        </span>
+                      </td>
+                      <td data-label="Økt">{d.title}</td>
+                      <td data-label="Distanse" className="tabular">
+                        {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'}
+                      </td>
+                      <td data-label="Innsats">{d.target_effort}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <div className="hero-label">VO2max-prognose</div>
+            <div className="hero-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <Gauge style={{ width: 14, height: 14, color: 'var(--series-aqua)' }} />
+              VO2max-prognose
+            </div>
             <div className="stat-row">
               <div className="stat-tile">
                 <span className="label">Nå</span>
@@ -97,7 +88,10 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
             <p className="hero-note">{plan.vo2max_projection.reasoning}</p>
           </div>
 
-          <div className="hero-label">Coaching-notater</div>
+          <div className="hero-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+            <NotebookPen style={{ width: 14, height: 14, color: 'var(--series-blue)' }} />
+            Coaching-notater
+          </div>
           <p style={{ fontSize: 14, lineHeight: 1.6 }}>{plan.coaching_notes}</p>
         </>
       )}

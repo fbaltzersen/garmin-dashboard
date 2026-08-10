@@ -1,22 +1,22 @@
-import type { SessionType, WeeklyPlanDay } from '../types'
+import { createPortal } from 'react-dom'
+import type { WeeklyPlanDay } from '../types'
 import { formatDate } from '../utils/format'
-
-const SESSION_LABEL: Record<SessionType, string> = {
-  hvile: 'Hvile',
-  rolig: 'Rolig',
-  intervall: 'Intervall',
-  terskel: 'Terskel',
-  langtur: 'Langtur',
-}
+import { SESSION_COLOR, SESSION_ICON, SESSION_LABEL } from '../uiMeta'
 
 export function PlanDayDetailModal({ day, onClose }: { day: WeeklyPlanDay; onClose: () => void }) {
-  return (
+  const SessionIcon = SESSION_ICON[day.session_type]
+
+  return createPortal(
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560 }}>
-        <h2>
-          {day.day} {formatDate(day.date)} — {SESSION_LABEL[day.session_type]}
+        <div className="badge" style={{ color: SESSION_COLOR[day.session_type], marginBottom: 6 }}>
+          <SessionIcon />
+          {SESSION_LABEL[day.session_type]}
+        </div>
+        <h2 style={{ marginBottom: 4 }}>
+          {day.day} {formatDate(day.date)}
         </h2>
-        <p style={{ fontWeight: 600, marginBottom: 12 }}>{day.title}</p>
+        <p style={{ fontWeight: 600, marginBottom: 12, color: 'var(--text-primary)' }}>{day.title}</p>
 
         <div className="stat-row" style={{ marginBottom: 16 }}>
           <div className="stat-tile">
@@ -33,27 +33,23 @@ export function PlanDayDetailModal({ day, onClose }: { day: WeeklyPlanDay; onClo
           </div>
         </div>
 
-        <div className="hero-label" style={{ marginBottom: 4 }}>
-          Innsats
-        </div>
+        <div className="field-label">Innsats</div>
         <p style={{ marginBottom: 12, fontSize: 14 }}>{day.target_effort}</p>
 
         {day.expected_feeling && (
           <>
-            <div className="hero-label" style={{ marginBottom: 4 }}>
-              Forventet følelse
-            </div>
+            <div className="field-label">Forventet følelse</div>
             <p style={{ marginBottom: 12, fontSize: 14 }}>{day.expected_feeling}</p>
           </>
         )}
 
         {day.intervals && day.intervals.length > 0 && (
           <>
-            <div className="hero-label" style={{ marginBottom: 8 }}>
+            <div className="field-label" style={{ marginBottom: 8 }}>
               Øktoppsett
             </div>
             <div className="table-scroll" style={{ marginBottom: 16 }}>
-              <table className="activity-table">
+              <table className="activity-table responsive-table">
                 <thead>
                   <tr>
                     <th>Del</th>
@@ -65,10 +61,14 @@ export function PlanDayDetailModal({ day, onClose }: { day: WeeklyPlanDay; onClo
                 <tbody>
                   {day.intervals.map((iv, i) => (
                     <tr key={i} style={{ cursor: 'default' }}>
-                      <td>{iv.label}</td>
-                      <td>{iv.duration_or_distance}</td>
-                      <td className="tabular">{iv.target_pace}</td>
-                      <td className="tabular">{iv.target_hr}</td>
+                      <td data-label="Del">{iv.label}</td>
+                      <td data-label="Lengde">{iv.duration_or_distance}</td>
+                      <td data-label="Tempo" className="tabular">
+                        {iv.target_pace}
+                      </td>
+                      <td data-label="Puls" className="tabular">
+                        {iv.target_hr}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -77,9 +77,7 @@ export function PlanDayDetailModal({ day, onClose }: { day: WeeklyPlanDay; onClo
           </>
         )}
 
-        <div className="hero-label" style={{ marginBottom: 4 }}>
-          Begrunnelse
-        </div>
+        <div className="field-label">Begrunnelse</div>
         <p style={{ fontSize: 14, lineHeight: 1.5, marginBottom: 16 }}>{day.rationale}</p>
 
         <div className="modal-actions">
@@ -88,6 +86,7 @@ export function PlanDayDetailModal({ day, onClose }: { day: WeeklyPlanDay; onClo
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

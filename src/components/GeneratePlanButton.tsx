@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Sparkles } from 'lucide-react'
 import { PHASE_LABEL, useWorkflowTrigger } from './SyncButton'
 import { PlanCommentModal } from './PlanCommentModal'
 
@@ -16,7 +17,7 @@ export function GeneratePlanButton({ idleLabel, onSuccess }: { idleLabel: string
   return (
     <div>
       <button className="sync-button" disabled={busy} onClick={() => setShowModal(true)}>
-        {busy && '⏳ '}
+        <Sparkles className={busy ? 'spin' : undefined} />
         {label}
       </button>
       {(state.error || state.run) && (

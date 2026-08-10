@@ -9,6 +9,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Target } from 'lucide-react'
 import type { AiRacePredictionPoint, LatestRollup, TrainingPlan } from '../types'
 import { Panel } from './Panel'
 import { formatDate, formatDelta, formatSecondsAsClock } from '../utils/format'
@@ -83,7 +84,7 @@ export function GoalPanel({
   const hasRange = plan?.race_prediction.range_low_seconds != null && plan?.race_prediction.range_high_seconds != null
 
   return (
-    <Panel title="Mål: 5K under 20:00 — AI-vurdering">
+    <Panel title="Mål: 5K under 20:00 — AI-vurdering" icon={Target}>
       {!plan && (
         <p className="hero-note">
           Ingen AI-vurdering ennå. Gå til "Planlegging" og generer en plan for å se AI-ens
@@ -92,7 +93,7 @@ export function GoalPanel({
       )}
       {plan && (
         <>
-          <div className="hero-row">
+          <div className="hero-row hero-glow">
             <div className="hero-figure tabular">{formatSecondsAsClock(current)}</div>
             <div className="hero-sub">
               <div className={`hero-delta ${good ? 'good' : 'bad'}`}>
@@ -112,6 +113,12 @@ export function GoalPanel({
           {chartData.length > 1 && (
             <ResponsiveContainer width="100%" height={220}>
               <ComposedChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="goalSmoothedFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--series-blue)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="var(--series-blue)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke="var(--gridline)" vertical={false} />
                 <XAxis
                   dataKey="date"
@@ -135,6 +142,14 @@ export function GoalPanel({
                   stroke="none"
                   fill="var(--series-blue)"
                   fillOpacity={0.12}
+                  connectNulls
+                  isAnimationActive={false}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="smoothed"
+                  stroke="none"
+                  fill="url(#goalSmoothedFill)"
                   connectNulls
                   isAnimationActive={false}
                 />

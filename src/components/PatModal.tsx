@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
+import { KeyRound } from 'lucide-react'
 import { setToken } from '../api/github'
 
 export function PatModal({ onSaved }: { onSaved: () => void }) {
@@ -10,9 +12,24 @@ export function PatModal({ onSaved }: { onSaved: () => void }) {
     onSaved()
   }
 
-  return (
+  return createPortal(
     <div className="modal-backdrop">
       <div className="modal-box">
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 'var(--radius-md)',
+            background: 'color-mix(in srgb, var(--series-blue) 16%, transparent)',
+            color: 'var(--series-blue)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 12,
+          }}
+        >
+          <KeyRound style={{ width: 20, height: 20 }} />
+        </div>
         <h2>Koble til GarminData</h2>
         <p>
           Lim inn en finkornet GitHub Personal Access Token med tilgang til{' '}
@@ -33,6 +50,7 @@ export function PatModal({ onSaved }: { onSaved: () => void }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

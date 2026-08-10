@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from 'react'
+import { CalendarDays, LineChart, LogOut, TrendingUp } from 'lucide-react'
 import './App.css'
 import { clearToken, getToken } from './api/github'
 import { useRollupData } from './hooks/useRollupData'
@@ -19,6 +20,27 @@ const AdherencePanel = lazy(() =>
 
 type Tab = 'progresjon' | 'detaljer' | 'planlegging'
 
+function BrandMark() {
+  return (
+    <svg className="app-brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="12" y="1.5" width="8" height="4" rx="1.6" fill="var(--series-blue)" />
+      <path d="M9 3.5 L11.5 6" stroke="var(--series-blue)" strokeWidth="2" strokeLinecap="round" />
+      <path d="M23 3.5 L20.5 6" stroke="var(--series-blue)" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="16" cy="19" r="13" fill="var(--page)" stroke="var(--series-blue)" strokeWidth="2.4" />
+      <circle cx="16" cy="19" r="10.4" fill="none" stroke="var(--gridline)" strokeWidth="1.2" />
+      <path d="M16 19 L16 11.5" stroke="var(--text-primary)" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M16 19 L20.8 21.2" stroke="var(--series-blue)" strokeWidth="2.2" strokeLinecap="round" />
+      <circle cx="16" cy="19" r="1.7" fill="var(--series-blue)" />
+    </svg>
+  )
+}
+
+const TABS: { id: Tab; label: string; icon: typeof TrendingUp }[] = [
+  { id: 'progresjon', label: 'Progresjon', icon: TrendingUp },
+  { id: 'detaljer', label: 'Detaljer', icon: LineChart },
+  { id: 'planlegging', label: 'Planlegging', icon: CalendarDays },
+]
+
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
   const [tab, setTab] = useState<Tab>('progresjon')
@@ -32,12 +54,16 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>5K under 20:00</h1>
+        <div className="app-brand">
+          <BrandMark />
+          <h1>5K under 20:00</h1>
+        </div>
         <div className="app-header-actions">
           {hasToken && <SyncButton onSuccess={reload} />}
           {hasToken && (
             <button className="icon-button" onClick={handleForget} title="Fjern PAT">
-              Koble fra
+              <LogOut />
+              <span className="icon-button-label">Koble fra</span>
             </button>
           )}
         </div>
@@ -65,24 +91,16 @@ function App() {
           <LatestActivityCard activity={data.activities[0] ?? null} />
 
           <nav className="tab-nav">
-            <button
-              className={`tab-button ${tab === 'progresjon' ? 'active' : ''}`}
-              onClick={() => setTab('progresjon')}
-            >
-              Progresjon
-            </button>
-            <button
-              className={`tab-button ${tab === 'detaljer' ? 'active' : ''}`}
-              onClick={() => setTab('detaljer')}
-            >
-              Detaljer
-            </button>
-            <button
-              className={`tab-button ${tab === 'planlegging' ? 'active' : ''}`}
-              onClick={() => setTab('planlegging')}
-            >
-              Planlegging
-            </button>
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                className={`tab-button ${tab === id ? 'active' : ''}`}
+                onClick={() => setTab(id)}
+              >
+                <Icon />
+                <span>{label}</span>
+              </button>
+            ))}
           </nav>
 
           {tab === 'progresjon' && (

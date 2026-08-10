@@ -1,3 +1,4 @@
+import { CalendarCheck, Footprints, Gauge, HeartPulse, RefreshCw } from 'lucide-react'
 import type { AcwrRiskBand, LatestRollup } from '../types'
 import { formatDate } from '../utils/format'
 
@@ -22,22 +23,34 @@ export function QuickStats({ latest }: { latest: LatestRollup }) {
   return (
     <div className="stat-row">
       <div className="stat-tile">
+        <div className="stat-tile-icon">
+          <Footprints />
+        </div>
         <span className="label">Ukentlig volum (utendørs)</span>
         <span className="value tabular">
           {latest.weekly_volume_km_last_7d != null ? `${latest.weekly_volume_km_last_7d} km` : '—'}
         </span>
       </div>
       <div className="stat-tile">
+        <div className="stat-tile-icon">
+          <CalendarCheck />
+        </div>
         <span className="label">Siste aktivitet</span>
         <span className="value">{formatDate(latest.last_activity_date)}</span>
       </div>
       <div className="stat-tile">
+        <div className="stat-tile-icon">
+          <HeartPulse />
+        </div>
         <span className="label">Laktatterskel</span>
         <span className="value tabular">
           {latest.lactate_threshold?.heart_rate ? `${latest.lactate_threshold.heart_rate} bpm` : '—'}
         </span>
       </div>
       <div className="stat-tile">
+        <div className="stat-tile-icon" style={{ color: acwr ? ACWR_COLOR[acwr.risk_band] : undefined }}>
+          <Gauge />
+        </div>
         <span className="label">Belastning (7d/28d-snitt)</span>
         <span className="value tabular" style={{ color: acwr ? ACWR_COLOR[acwr.risk_band] : undefined }}>
           {acwr?.value != null ? acwr.value.toFixed(2) : '—'}
@@ -45,6 +58,9 @@ export function QuickStats({ latest }: { latest: LatestRollup }) {
         <span className="label">{acwr ? ACWR_LABEL[acwr.risk_band] : '—'}</span>
       </div>
       <div className="stat-tile">
+        <div className="stat-tile-icon">
+          <RefreshCw />
+        </div>
         <span className="label">Sist synket</span>
         <span className="value">
           {latest.last_sync_utc ? new Date(latest.last_sync_utc).toLocaleString('nb-NO') : '—'}

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { triggerWorkflowAndTrack, type SyncState } from '../api/syncTrigger'
 
 export const PHASE_LABEL: Record<SyncState['phase'], string> = {
@@ -47,7 +48,7 @@ export function WorkflowButton({
   return (
     <div>
       <button className="sync-button" disabled={busy} onClick={() => trigger()}>
-        {busy && '⏳ '}
+        <RefreshCw className={busy ? 'spin' : undefined} />
         {label}
       </button>
       {(state.error || state.run) && (

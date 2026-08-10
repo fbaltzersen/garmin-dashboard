@@ -1,39 +1,9 @@
-import type { ActivitySummary, SessionType, TrainingPlan } from '../types'
+import { CalendarRange } from 'lucide-react'
+import type { ActivitySummary, TrainingPlan } from '../types'
 import { Panel } from './Panel'
 import { formatDate } from '../utils/format'
-import { computeDayStatus, type DayStatus } from '../utils/adherence'
-
-const SESSION_LABEL: Record<SessionType, string> = {
-  hvile: 'Hvile',
-  rolig: 'Rolig',
-  intervall: 'Intervall',
-  terskel: 'Terskel',
-  langtur: 'Langtur',
-}
-
-const STATUS_ICON: Record<DayStatus, string> = {
-  completed: '✓',
-  partial: '~',
-  missed: '✗',
-  rest_broken: '!',
-  upcoming: '·',
-}
-
-const STATUS_COLOR: Record<DayStatus, string> = {
-  completed: 'var(--status-good)',
-  partial: 'var(--status-warning)',
-  missed: 'var(--status-critical)',
-  rest_broken: 'var(--status-warning)',
-  upcoming: 'var(--text-muted)',
-}
-
-const STATUS_LABEL: Record<DayStatus, string> = {
-  completed: 'Gjennomført',
-  partial: 'Delvis',
-  missed: 'Droppet',
-  rest_broken: 'Trente på hviledag',
-  upcoming: 'Kommer',
-}
+import { computeDayStatus } from '../utils/adherence'
+import { SESSION_COLOR, SESSION_ICON, SESSION_LABEL, STATUS_COLOR, STATUS_ICON, STATUS_LABEL } from '../uiMeta'
 
 function mondayOf(d: Date): Date {
   const day = (d.getDay() + 6) % 7 // Monday = 0 .. Sunday = 6
@@ -84,10 +54,11 @@ export function WeekSummaryPanel({
   const completedSoFar = dueSoFar.filter(
     (d) => computeDayStatus(d, activitiesByDate.get(d.date) ?? [], d.date > todayIso) === 'completed',
   ).length
+  const completionPct = dueSoFar.length > 0 ? Math.round((completedSoFar / dueSoFar.length) * 100) : 0
   const runningKmThisWeek = [...runningKmByDate.values()].reduce((a, b) => a + b, 0)
 
   return (
-    <Panel title={`Denne uken (${formatDate(weekStart)} – ${formatDate(weekEnd)})`}>
+    <Panel title={`Denne uken (${formatDate(weekStart)} – ${formatDate(weekEnd)})`} icon={CalendarRange}>
       {!plan && <p className="hero-note">Ingen plan generert ennå — gå til "Planlegging" for å komme i gang.</p>}
       {plan && weekDays.length === 0 && (
         <p className="hero-note">Planen dekker ikke inneværende uke ennå. Generer en ny plan for å fylle den ut.</p>
@@ -104,10 +75,13 @@ export function WeekSummaryPanel({
               <span className="value tabular">
                 {completedSoFar}/{dueSoFar.length}
               </span>
+              <div className="progress-bar" style={{ marginTop: 4 }}>
+                <div className="progress-bar-fill" style={{ width: `${completionPct}%` }} />
+              </div>
             </div>
           </div>
           <div className="table-scroll">
-            <table className="activity-table">
+            <table className="activity-table responsive-table">
               <thead>
                 <tr>
                   <th>Dag</th>
@@ -121,19 +95,29 @@ export function WeekSummaryPanel({
                 {weekDays.map((d) => {
                   const status = computeDayStatus(d, activitiesByDate.get(d.date) ?? [], d.date > todayIso)
                   const actualKm = runningKmByDate.get(d.date) ?? 0
+                  const SessionIcon = SESSION_ICON[d.session_type]
+                  const StatusIcon = STATUS_ICON[status]
                   return (
                     <tr key={d.date} style={{ cursor: 'default' }}>
-                      <td>
+                      <td data-label="Dag">
                         {d.day} <span className="tt-label">{formatDate(d.date)}</span>
                       </td>
-                      <td>{SESSION_LABEL[d.session_type]}</td>
-                      <td>{d.title}</td>
-                      <td className="tabular">
+                      <td data-label="Type">
+                        <span className="badge" style={{ color: SESSION_COLOR[d.session_type] }}>
+                          <SessionIcon />
+                          {SESSION_LABEL[d.session_type]}
+                        </span>
+                      </td>
+                      <td data-label="Økt">{d.title}</td>
+                      <td data-label="Distanse (plan / faktisk)" className="tabular">
                         {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'} /{' '}
                         {actualKm > 0 ? `${actualKm.toFixed(1)} km` : '—'}
                       </td>
-                      <td style={{ color: STATUS_COLOR[status] }}>
-                        {STATUS_ICON[status]} {STATUS_LABEL[status]}
+                      <td data-label="Status">
+                        <span className="badge" style={{ color: STATUS_COLOR[status] }}>
+                          <StatusIcon />
+                          {STATUS_LABEL[status]}
+                        </span>
                       </td>
                     </tr>
                   )

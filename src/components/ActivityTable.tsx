@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ListOrdered } from 'lucide-react'
 import type { ActivitySummary } from '../types'
 import { Panel } from './Panel'
 import { ActivityDetailModal } from './ActivityDetailModal'
@@ -9,9 +10,9 @@ export function ActivityTable({ activities }: { activities: ActivitySummary[] })
   const recent = activities.slice(0, 15)
 
   return (
-    <Panel title="Siste aktiviteter">
+    <Panel title="Siste aktiviteter" icon={ListOrdered}>
       <div className="table-scroll">
-        <table className="activity-table">
+        <table className="activity-table responsive-table">
           <thead>
             <tr>
               <th>Dato</th>
@@ -24,11 +25,17 @@ export function ActivityTable({ activities }: { activities: ActivitySummary[] })
           <tbody>
             {recent.map((a) => (
               <tr key={a.activity_id} onClick={() => setSelected(a)}>
-                <td>{formatDate(a.date)}</td>
-                <td>{a.name ?? a.type}</td>
-                <td className="tabular">{a.distance_km.toFixed(2)} km</td>
-                <td className="tabular">{formatPaceMinPerKm(a.distance_km, a.duration_min)}</td>
-                <td className="tabular">{a.avg_hr ?? '—'}</td>
+                <td data-label="Dato">{formatDate(a.date)}</td>
+                <td data-label="Navn">{a.name ?? a.type}</td>
+                <td data-label="Distanse" className="tabular">
+                  {a.distance_km.toFixed(2)} km
+                </td>
+                <td data-label="Tempo" className="tabular">
+                  {formatPaceMinPerKm(a.distance_km, a.duration_min)}
+                </td>
+                <td data-label="Snittpuls" className="tabular">
+                  {a.avg_hr ?? '—'}
+                </td>
               </tr>
             ))}
           </tbody>
