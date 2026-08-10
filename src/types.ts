@@ -83,6 +83,9 @@ export interface ActivityLap {
   averageSpeed: number | null
   averageHR: number | null
   maxHR: number | null
+  intensityType?: 'WARMUP' | 'ACTIVE' | 'REST' | 'COOLDOWN' | string | null
+  elevationGain?: number | null
+  elevationLoss?: number | null
 }
 
 export interface ActivityDetail {
