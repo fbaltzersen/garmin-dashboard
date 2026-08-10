@@ -154,6 +154,7 @@ export interface SessionTypePoint {
   elevation_gain_m?: number | null
   avg_hr: number | null
   distance_km: number
+  active_only?: boolean
 }
 
 export type SessionTypeTrends = Record<CompletedSessionType, SessionTypePoint[]>

@@ -42,6 +42,9 @@ function CombinedTooltip({ active, payload, label }: any) {
       <div className="tt-label">
         {p.distance_km} km{p.elevation_gain_m ? ` · ${Math.round(p.elevation_gain_m)} hm` : ''}
       </div>
+      <div className="tt-label">
+        {p.active_only ? 'Kun aktive drag (pauser filtrert bort)' : 'Snitt for hele økten'}
+      </div>
     </div>
   )
 }
@@ -84,6 +87,7 @@ function TypeRow({
     ? [Math.min(...hrValues) - 5, Math.max(...hrValues) + 5]
     : [0, 200]
   const targetBand = zones ? targetBandForType(type, zones, hrDomain) : null
+  const anyActiveOnly = points.some((p) => p.active_only)
 
   return (
     <div style={{ marginBottom: 24 }}>
@@ -99,6 +103,13 @@ function TypeRow({
             — lavere er raskere) · <span style={{ color: 'var(--series-orange)' }}>■</span> Snittpuls
             (bpm, høyre akse){targetBand && ` · skravert felt = ${targetBand.label}`}
           </div>
+          {anyActiveOnly && (
+            <p className="hero-note" style={{ marginBottom: 4 }}>
+              Beregnet fra kun de aktive dragene der Garmin har registrert dem (pauser/jogg mellom
+              drag er filtrert bort) — økter uten registrerte drag viser snitt for hele økten i
+              stedet.
+            </p>
+          )}
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={points} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
               <CartesianGrid stroke="var(--gridline)" vertical={false} />
