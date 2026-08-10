@@ -71,10 +71,15 @@ export function GoalPanel({
   trend: AiRacePredictionPoint[]
 }) {
   const target = latest.goal.target_seconds
-  const current = plan?.race_prediction.current_5k_seconds ?? null
+  const chartData = withSmoothing(trend)
+  // The headline figure uses the smoothed trailing average, not the latest
+  // single generation - a single AI assessment can swing several minutes
+  // between runs on unchanged data, and showing that raw would undo the
+  // whole point of smoothing the chart underneath it.
+  const smoothedCurrent = chartData.length > 0 ? chartData[chartData.length - 1].smoothed : null
+  const current = smoothedCurrent ?? plan?.race_prediction.current_5k_seconds ?? null
   const delta = current != null ? current - target : null
   const good = delta != null && delta <= 0
-  const chartData = withSmoothing(trend)
   const hasRange = plan?.race_prediction.range_low_seconds != null && plan?.race_prediction.range_high_seconds != null
 
   return (
@@ -94,9 +99,13 @@ export function GoalPanel({
                 {formatDelta(delta)} vs. {formatSecondsAsClock(target)}
               </div>
               <div className="hero-label">
-                {CONFIDENCE_LABEL[plan.race_prediction.confidence]} · vurdert {formatDate(plan.generated_at)}
+                {smoothedCurrent != null ? `Glidende snitt av siste ${SMOOTHING_WINDOW} vurderinger` : 'Enkeltvurdering'}
+                {' · siste vurdering '}
+                {formatDate(plan.generated_at)} ({CONFIDENCE_LABEL[plan.race_prediction.confidence]})
                 {hasRange &&
-                  ` · realistisk spenn ${formatSecondsAsClock(plan.race_prediction.range_low_seconds)}–${formatSecondsAsClock(plan.race_prediction.range_high_seconds)}`}
+                  ` · spenn ${formatSecondsAsClock(plan.race_prediction.range_low_seconds)}–${formatSecondsAsClock(plan.race_prediction.range_high_seconds)}`}
+                {plan.race_prediction.estimated_weeks_to_goal > 0 &&
+                  ` · ~${plan.race_prediction.estimated_weeks_to_goal} uker til målet`}
               </div>
             </div>
           </div>
@@ -153,8 +162,9 @@ export function GoalPanel({
           )}
           <p className="hero-note">{plan.race_prediction.reasoning}</p>
           <div className="hero-note">
-            Grønn stiplet linje = 20:00-målet. Tykk linje = glidende snitt av siste{' '}
-            {SMOOTHING_WINDOW} vurderinger (dempet dag-til-dag-støy), tynn linje = enkeltvurdering,
+            Tallet øverst er det glidende snittet (tykk linje i grafen) av siste {SMOOTHING_WINDOW}{' '}
+            vurderinger, ikke bare siste enkeltvurdering (tynn linje) — det gjør at en enkelt
+            støyete AI-vurdering ikke slår urimelig mye ut. Grønn stiplet linje = 20:00-målet,
             skravert felt = AI-ens usikkerhetsspenn. Vurdert av AI ({plan.model}) ut fra
             Garmin-data, treningshistorikk og dine egne notater — ikke bare Garmins egen
             prediksjon.

@@ -3,7 +3,7 @@ import type { SessionType, TrainingPlan, WeeklyPlanDay } from '../types'
 import { Panel } from './Panel'
 import { GeneratePlanButton } from './GeneratePlanButton'
 import { PlanDayDetailModal } from './PlanDayDetailModal'
-import { formatDate, formatSecondsAsClock } from '../utils/format'
+import { formatDate } from '../utils/format'
 
 const SESSION_LABEL: Record<SessionType, string> = {
   hvile: 'Hvile',
@@ -19,12 +19,6 @@ const SESSION_COLOR: Record<SessionType, string> = {
   langtur: 'var(--series-blue)',
   terskel: 'var(--series-orange)',
   intervall: 'var(--status-critical)',
-}
-
-const CONFIDENCE_LABEL: Record<TrainingPlan['race_prediction']['confidence'], string> = {
-  high: 'Høy sikkerhet',
-  medium: 'Middels sikkerhet',
-  low: 'Lav sikkerhet',
 }
 
 export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSuccess: () => void }) {
@@ -44,7 +38,10 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
             {formatDate(plan.plan_start_date)} – {formatDate(plan.plan_end_date)} · generert{' '}
             {formatDate(plan.generated_at)}
           </div>
-          <p className="hero-note" style={{ marginBottom: 8 }}>Trykk på en økt for detaljer (øktoppsett, forventet følelse).</p>
+          <p className="hero-note" style={{ marginBottom: 8 }}>
+            Trykk på en økt for detaljer (øktoppsett, forventet følelse). AI-ens 5K-vurdering og
+            utvikling over tid vises i Progresjon-fanen.
+          </p>
 
           <div className="table-scroll" style={{ marginBottom: 20 }}>
             <table className="activity-table plan-table">
@@ -81,39 +78,23 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
             </table>
           </div>
 
-          <div className="panel-grid" style={{ marginBottom: 16 }}>
-            <div>
-              <div className="hero-label">VO2max-prognose</div>
-              <div className="stat-row">
-                <div className="stat-tile">
-                  <span className="label">Nå</span>
-                  <span className="value tabular">{plan.vo2max_projection.current}</span>
-                </div>
-                <div className="stat-tile">
-                  <span className="label">Om 4 uker</span>
-                  <span className="value tabular">{plan.vo2max_projection.in_4_weeks}</span>
-                </div>
-                <div className="stat-tile">
-                  <span className="label">Om 12 uker</span>
-                  <span className="value tabular">{plan.vo2max_projection.in_12_weeks}</span>
-                </div>
+          <div style={{ marginBottom: 16 }}>
+            <div className="hero-label">VO2max-prognose</div>
+            <div className="stat-row">
+              <div className="stat-tile">
+                <span className="label">Nå</span>
+                <span className="value tabular">{plan.vo2max_projection.current}</span>
               </div>
-              <p className="hero-note">{plan.vo2max_projection.reasoning}</p>
-            </div>
-            <div>
-              <div className="hero-label">5K-prediksjon (AI-vurdert)</div>
-              <div className="hero-row" style={{ marginBottom: 4 }}>
-                <div className="hero-figure tabular" style={{ fontSize: 32 }}>
-                  {formatSecondsAsClock(plan.race_prediction.current_5k_seconds)}
-                </div>
-                <div className="hero-label">
-                  {CONFIDENCE_LABEL[plan.race_prediction.confidence]}
-                  {plan.race_prediction.estimated_weeks_to_goal > 0 &&
-                    ` · ~${plan.race_prediction.estimated_weeks_to_goal} uker til målet`}
-                </div>
+              <div className="stat-tile">
+                <span className="label">Om 4 uker</span>
+                <span className="value tabular">{plan.vo2max_projection.in_4_weeks}</span>
               </div>
-              <p className="hero-note">{plan.race_prediction.reasoning}</p>
+              <div className="stat-tile">
+                <span className="label">Om 12 uker</span>
+                <span className="value tabular">{plan.vo2max_projection.in_12_weeks}</span>
+              </div>
             </div>
+            <p className="hero-note">{plan.vo2max_projection.reasoning}</p>
           </div>
 
           <div className="hero-label">Coaching-notater</div>

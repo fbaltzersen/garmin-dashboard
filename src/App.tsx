@@ -6,22 +6,18 @@ import { PatModal } from './components/PatModal'
 import { SyncButton } from './components/SyncButton'
 import { GoalPanel } from './components/GoalPanel'
 import { QuickStats } from './components/QuickStats'
-import { Vo2MaxChart } from './components/Vo2MaxChart'
-import { TrainingStatusStrip } from './components/TrainingStatusStrip'
-import { WeeklyVolumeChart } from './components/WeeklyVolumeChart'
-import { ActivityTable } from './components/ActivityTable'
-import { RecoveryPanel } from './components/RecoveryPanel'
-import { SessionTypeProgressionPanel } from './components/SessionTypeProgressionPanel'
 import { LatestActivityCard } from './components/LatestActivityCard'
 import { WeekSummaryPanel } from './components/WeekSummaryPanel'
+import { LoadingSkeleton } from './components/LoadingSkeleton'
 
-// Only needed when the user opens "Planlegging" - kept out of the initial bundle.
+// Only needed once the user opens a non-default tab - kept out of the initial bundle.
+const DetailsTab = lazy(() => import('./components/DetailsTab').then((m) => ({ default: m.DetailsTab })))
 const PlanPanel = lazy(() => import('./components/PlanPanel').then((m) => ({ default: m.PlanPanel })))
 const AdherencePanel = lazy(() =>
   import('./components/AdherencePanel').then((m) => ({ default: m.AdherencePanel })),
 )
 
-type Tab = 'progresjon' | 'planlegging'
+type Tab = 'progresjon' | 'detaljer' | 'planlegging'
 
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
@@ -56,7 +52,7 @@ function App() {
         />
       )}
 
-      {hasToken && loading && <p className="hero-note">Laster data…</p>}
+      {hasToken && loading && <LoadingSkeleton />}
       {hasToken && error && (
         <div className="empty-state">
           <h1>Kunne ikke laste data</h1>
@@ -76,6 +72,12 @@ function App() {
               Progresjon
             </button>
             <button
+              className={`tab-button ${tab === 'detaljer' ? 'active' : ''}`}
+              onClick={() => setTab('detaljer')}
+            >
+              Detaljer
+            </button>
+            <button
               className={`tab-button ${tab === 'planlegging' ? 'active' : ''}`}
               onClick={() => setTab('planlegging')}
             >
@@ -90,22 +92,25 @@ function App() {
               <div className="panel">
                 <QuickStats latest={data.latest} />
               </div>
-              <div className="panel-grid">
-                <Vo2MaxChart data={data.vo2max} />
-                <TrainingStatusStrip data={data.trainingStatus} />
-              </div>
-              <WeeklyVolumeChart data={data.weeklyVolume} />
-              <ActivityTable activities={data.activities} />
-              <SessionTypeProgressionPanel
-                data={data.sessionTypeTrends}
-                lthrBpm={data.latest.lactate_threshold?.heart_rate ?? null}
-              />
-              <RecoveryPanel data={data.recovery} />
             </>
           )}
 
+          {tab === 'detaljer' && (
+            <Suspense fallback={<LoadingSkeleton />}>
+              <DetailsTab
+                vo2max={data.vo2max}
+                trainingStatus={data.trainingStatus}
+                weeklyVolume={data.weeklyVolume}
+                activities={data.activities}
+                sessionTypeTrends={data.sessionTypeTrends}
+                lthrBpm={data.latest.lactate_threshold?.heart_rate ?? null}
+                recovery={data.recovery}
+              />
+            </Suspense>
+          )}
+
           {tab === 'planlegging' && (
-            <Suspense fallback={<p className="hero-note">Laster…</p>}>
+            <Suspense fallback={<LoadingSkeleton />}>
               <PlanPanel plan={data.plan} onSuccess={reload} />
               <AdherencePanel entries={data.adherence} plan={data.plan} activities={data.activities} />
             </Suspense>
