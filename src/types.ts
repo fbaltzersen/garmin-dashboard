@@ -88,9 +88,17 @@ export interface ActivityLap {
   elevationLoss?: number | null
 }
 
+export interface TrackPoint {
+  distance_km: number
+  pace_min_per_km: number | null
+  hr: number | null
+  elevation_m: number | null
+}
+
 export interface ActivityDetail {
   splits: { activityId: number; lapDTOs: ActivityLap[] }
   typed_splits: { activityId: number; splits: unknown[] }
+  track?: TrackPoint[] | null
 }
 
 export type SessionType = 'hvile' | 'rolig' | 'intervall' | 'terskel' | 'langtur'
