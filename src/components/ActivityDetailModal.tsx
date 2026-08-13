@@ -19,7 +19,7 @@ import { fetchJournalEntryForActivity, upsertJournalEntry } from '../api/journal
 import { FEELINGS, FEELING_LABEL, type Feeling } from '../journalOptions'
 import type { ActivityDetail, ActivityLap, ActivitySummary } from '../types'
 import { SESSION_COLOR, SESSION_ICON, SESSION_LABEL } from '../uiMeta'
-import { formatPaceMinPerKm } from '../utils/format'
+import { formatPaceFromMinutes, formatPaceMinPerKm } from '../utils/format'
 
 interface ChartRow {
   x: number
@@ -176,11 +176,7 @@ export function ActivityDetailModal({
   const hasElevationChart = showTrackElevation || showLapElevation
 
   const displayPaceFormatted = activeSummary
-    ? (() => {
-        const mins = Math.floor(activeSummary.paceMinPerKm)
-        const secs = Math.round((activeSummary.paceMinPerKm - mins) * 60)
-        return `${mins}:${secs.toString().padStart(2, '0')}/km`
-      })()
+    ? formatPaceFromMinutes(activeSummary.paceMinPerKm)
     : formatPaceMinPerKm(activity.distance_km, activity.duration_min)
   const displayHr = activeSummary?.avgHr ?? activity.avg_hr
 
