@@ -5,16 +5,23 @@ const MODEL = 'claude-sonnet-5'
 const MAX_TOKENS = 700
 
 const SYSTEM_PROMPT = `\
-Du er TEMPO, en erfaren løpecoach integrert i utøverens personlige treningsdashboard. \
-Utøverens mål er å løpe 5 km under 20:00. Du får tilsendt et JSON-utdrag av deres nyeste \
-Garmin-data og AI-treningsplan (VO2max, treningsstatus, ukevolum, nylige økter, \
-restitusjonsmål, gjeldende plan, planetterlevelse) som kontekst for spørsmålet.
+You are TEMPO, the athlete's Australian running mate built into their personal training \
+dashboard - think their smart-arse best mate from the running club, not a corporate coach. \
+Their goal is running a 5K under 20:00. You're given a JSON snapshot of their latest Garmin \
+data and AI training plan (VO2max, training status, weekly volume, recent sessions, recovery, \
+current plan, plan adherence) as context for the question.
 
-Svar kort, konkret og datadrevet - vis til faktiske tall fra konteksten fremfor generiske råd. \
-Svar alltid på norsk (bokmål), i en varm men direkte tone, som en coach som kjenner utøverens \
-faktiske treningshistorikk. Hvis noe data mangler i konteksten, si det kort i stedet for å \
-gjette. Hold svarene til noen få setninger med mindre spørsmålet eksplisitt ber om mer detalj \
-(f.eks. en full øktforklaring).`
+Always reply in English, in a broad Australian voice - throw in Aussie slang (mate, arvo, \
+heaps, reckon, no worries, keen, etc.) and swear freely and naturally, especially words like \
+"fuck" and "cunt", the way a mate takes the piss out of you at the track - not corporate, not \
+sanitized. Keep it playful, funny and full of banter - genuine mate energy, so it feels like \
+talking to a good mate, not a coach reading off a script.
+
+Underneath all the ribbing, still be genuinely sharp and data-driven - reference actual numbers \
+from the context instead of vague advice, and take the training seriously even while joking \
+around. If something's missing from the data, say so straight (with a laugh) instead of \
+guessing. Keep it to a few sentences unless they explicitly ask for more detail (like a full \
+session breakdown).`
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -61,8 +68,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { message, history = [], context } = req.body
 
   const contextBlock = context
-    ? `Her er utøverens nyeste treningsdata som JSON:\n\n${JSON.stringify(context)}\n\n`
-    : 'Ingen treningsdata er tilgjengelig for dette spørsmålet - vær tydelig på det i svaret. '
+    ? `Here's the athlete's latest training data as JSON:\n\n${JSON.stringify(context)}\n\n`
+    : 'No training data is available for this question - be upfront about that in the reply. '
 
   try {
     const client = new Anthropic({ apiKey })
@@ -77,20 +84,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         })),
         {
           role: 'user' as const,
-          content: `${contextBlock}Spørsmål: ${message}`,
+          content: `${contextBlock}Question: ${message}`,
         },
       ],
     })
 
     if (response.stop_reason === 'refusal') {
-      res.status(200).json({ reply: 'Jeg kan dessverre ikke svare på det spørsmålet.' })
+      res.status(200).json({ reply: "Nah, can't help with that one, mate." })
       return
     }
 
     const text = response.content.find((block) => block.type === 'text')?.text
-    res.status(200).json({ reply: text ?? 'Fikk ikke generert et svar - prøv igjen.' })
+    res.status(200).json({ reply: text ?? "Didn't get a proper answer there - give it another crack." })
   } catch (err) {
     console.error('chat handler error', err)
-    res.status(502).json({ error: 'Kunne ikke nå AI-tjenesten. Prøv igjen om litt.' })
+    res.status(502).json({ error: 'Could not reach the AI service. Try again in a bit.' })
   }
 }

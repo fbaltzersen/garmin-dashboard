@@ -4,7 +4,7 @@ import type { RollupData } from './useRollupData'
 
 const WELCOME: ChatMessage = {
   role: 'assistant',
-  text: 'Hei! Spør meg om progresjonen din, dagens økt, eller hvordan uken har vært.',
+  text: "Oi oi, look who's here. Ask us about your progress, today's session, or how the week's been going, mate.",
 }
 
 export function useTalkChat(data: RollupData | null) {
