@@ -6,39 +6,41 @@ import type {
   Vo2MaxPoint,
   WeeklyVolumePoint,
 } from '../types'
+import { LatestActivityCard } from './LatestActivityCard'
+import { ActivityTable } from './ActivityTable'
+import { WeeklyVolumeChart } from './WeeklyVolumeChart'
+import { Zone2PacePanel } from './Zone2PacePanel'
 import { Vo2MaxChart } from './Vo2MaxChart'
 import { TrainingStatusStrip } from './TrainingStatusStrip'
-import { WeeklyVolumeChart } from './WeeklyVolumeChart'
-import { ActivityTable } from './ActivityTable'
-import { SessionTypeProgressionPanel } from './SessionTypeProgressionPanel'
 import { RecoveryPanel } from './RecoveryPanel'
 
-export function DetailsTab({
+export function SessionsTab({
+  latestActivity,
+  activities,
+  weeklyVolume,
+  sessionTypeTrends,
   vo2max,
   trainingStatus,
-  weeklyVolume,
-  activities,
-  sessionTypeTrends,
-  lthrBpm,
   recovery,
 }: {
+  latestActivity: ActivitySummary | null
+  activities: ActivitySummary[]
+  weeklyVolume: WeeklyVolumePoint[]
+  sessionTypeTrends: SessionTypeTrends | null
   vo2max: Vo2MaxPoint[]
   trainingStatus: TrainingStatusPoint[]
-  weeklyVolume: WeeklyVolumePoint[]
-  activities: ActivitySummary[]
-  sessionTypeTrends: SessionTypeTrends | null
-  lthrBpm: number | null
   recovery: RecoveryPoint[]
 }) {
   return (
     <>
+      <LatestActivityCard activity={latestActivity} />
+      <ActivityTable activities={activities} />
+      <WeeklyVolumeChart data={weeklyVolume} />
+      <Zone2PacePanel data={sessionTypeTrends} />
       <div className="panel-grid">
         <Vo2MaxChart data={vo2max} />
         <TrainingStatusStrip data={trainingStatus} />
       </div>
-      <WeeklyVolumeChart data={weeklyVolume} />
-      <ActivityTable activities={activities} />
-      <SessionTypeProgressionPanel data={sessionTypeTrends} lthrBpm={lthrBpm} />
       <RecoveryPanel data={recovery} />
     </>
   )

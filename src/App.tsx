@@ -1,24 +1,20 @@
 import { lazy, Suspense, useState } from 'react'
-import { CalendarDays, LineChart, LogOut, TrendingUp } from 'lucide-react'
+import { CalendarDays, Home, ListOrdered, LogOut, MessageCircle } from 'lucide-react'
 import './App.css'
 import { clearToken, getToken } from './api/github'
 import { useRollupData } from './hooks/useRollupData'
+import { useTalkChat } from './hooks/useTalkChat'
 import { PatModal } from './components/PatModal'
 import { SyncButton } from './components/SyncButton'
-import { GoalPanel } from './components/GoalPanel'
-import { QuickStats } from './components/QuickStats'
-import { LatestActivityCard } from './components/LatestActivityCard'
-import { WeekSummaryPanel } from './components/WeekSummaryPanel'
+import { HomeTab } from './components/HomeTab'
 import { LoadingSkeleton } from './components/LoadingSkeleton'
 
 // Only needed once the user opens a non-default tab - kept out of the initial bundle.
-const DetailsTab = lazy(() => import('./components/DetailsTab').then((m) => ({ default: m.DetailsTab })))
-const PlanPanel = lazy(() => import('./components/PlanPanel').then((m) => ({ default: m.PlanPanel })))
-const AdherencePanel = lazy(() =>
-  import('./components/AdherencePanel').then((m) => ({ default: m.AdherencePanel })),
-)
+const TalkPanel = lazy(() => import('./components/TalkPanel').then((m) => ({ default: m.TalkPanel })))
+const PlanTab = lazy(() => import('./components/PlanTab').then((m) => ({ default: m.PlanTab })))
+const SessionsTab = lazy(() => import('./components/SessionsTab').then((m) => ({ default: m.SessionsTab })))
 
-type Tab = 'progresjon' | 'detaljer' | 'planlegging'
+type Tab = 'home' | 'talk' | 'plan' | 'sessions'
 
 function BrandMark() {
   return (
@@ -35,16 +31,18 @@ function BrandMark() {
   )
 }
 
-const TABS: { id: Tab; label: string; icon: typeof TrendingUp }[] = [
-  { id: 'progresjon', label: 'Progresjon', icon: TrendingUp },
-  { id: 'detaljer', label: 'Detaljer', icon: LineChart },
-  { id: 'planlegging', label: 'Planlegging', icon: CalendarDays },
+const TABS: { id: Tab; label: string; icon: typeof Home }[] = [
+  { id: 'home', label: 'Home', icon: Home },
+  { id: 'talk', label: 'Talk', icon: MessageCircle },
+  { id: 'plan', label: 'Plan', icon: CalendarDays },
+  { id: 'sessions', label: 'Sessions', icon: ListOrdered },
 ]
 
 function App() {
   const [hasToken, setHasToken] = useState(() => Boolean(getToken()))
-  const [tab, setTab] = useState<Tab>('progresjon')
+  const [tab, setTab] = useState<Tab>('home')
   const { data, loading, error, reload } = useRollupData()
+  const chat = useTalkChat(data)
 
   function handleForget() {
     clearToken()
@@ -88,8 +86,6 @@ function App() {
 
       {hasToken && data && (
         <>
-          <LatestActivityCard activity={data.activities[0] ?? null} />
-
           <nav className="tab-nav">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
@@ -103,34 +99,33 @@ function App() {
             ))}
           </nav>
 
-          {tab === 'progresjon' && (
-            <>
-              <WeekSummaryPanel plan={data.plan} activities={data.activities} />
-              <GoalPanel latest={data.latest} plan={data.plan} trend={data.aiRacePredictionTrend} />
-              <div className="panel">
-                <QuickStats latest={data.latest} />
-              </div>
-            </>
+          {tab === 'home' && (
+            <HomeTab data={data} chat={chat} onOpenTalk={() => setTab('talk')} />
           )}
 
-          {tab === 'detaljer' && (
+          {tab === 'talk' && (
             <Suspense fallback={<LoadingSkeleton />}>
-              <DetailsTab
-                vo2max={data.vo2max}
-                trainingStatus={data.trainingStatus}
-                weeklyVolume={data.weeklyVolume}
-                activities={data.activities}
-                sessionTypeTrends={data.sessionTypeTrends}
-                lthrBpm={data.latest.lactate_threshold?.heart_rate ?? null}
-                recovery={data.recovery}
-              />
+              <TalkPanel chat={chat} />
             </Suspense>
           )}
 
-          {tab === 'planlegging' && (
+          {tab === 'plan' && (
             <Suspense fallback={<LoadingSkeleton />}>
-              <PlanPanel plan={data.plan} onSuccess={reload} />
-              <AdherencePanel entries={data.adherence} plan={data.plan} activities={data.activities} />
+              <PlanTab plan={data.plan} adherence={data.adherence} activities={data.activities} onSuccess={reload} />
+            </Suspense>
+          )}
+
+          {tab === 'sessions' && (
+            <Suspense fallback={<LoadingSkeleton />}>
+              <SessionsTab
+                latestActivity={data.activities[0] ?? null}
+                activities={data.activities}
+                weeklyVolume={data.weeklyVolume}
+                sessionTypeTrends={data.sessionTypeTrends}
+                vo2max={data.vo2max}
+                trainingStatus={data.trainingStatus}
+                recovery={data.recovery}
+              />
             </Suspense>
           )}
         </>

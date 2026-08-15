@@ -191,6 +191,12 @@
   .panel-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Fixed 2-column stat grid on mobile, matching the reference design,
+     rather than auto-fit's width-dependent column count. */
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 600px) {
@@ -212,6 +218,31 @@
     padding: 16px;
     border-radius: var(--radius-md);
   }
+}
+
+/* ---------- Home tab ---------- */
+
+.home-greeting {
+  margin-bottom: 4px;
+}
+
+.home-greeting-title {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.chip-row .pill-choice {
+  padding: 8px 13px;
+  font-size: 12.5px;
 }
 
 /* ---------- Hero figures ---------- */
@@ -588,6 +619,230 @@ table.activity-table tbody tr:hover {
 
   table.responsive-table td:empty::before {
     content: none;
+  }
+}
+
+/* ---------- List rows (sessions/plan, matches ref-design row anatomy) ---------- */
+
+.list-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 2px;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+}
+
+button.list-row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+button.list-row:hover {
+  background: color-mix(in srgb, var(--series-blue) 6%, transparent);
+}
+
+.list-group > .list-row:last-child {
+  border-bottom: none;
+}
+
+.list-row-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+
+.list-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.list-row-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-row-subtitle {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-row-value {
+  flex: none;
+  max-width: 38%;
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: normal;
+}
+
+/* ---------- Talk (chat) ---------- */
+
+.talk-panel {
+  display: flex;
+  flex-direction: column;
+  height: min(72vh, 640px);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.talk-header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.talk-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--text-muted);
+}
+
+.talk-status-dot.active {
+  background: var(--status-good);
+}
+
+.talk-header-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.talk-header-status {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.talk-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.talk-bubble-row {
+  display: flex;
+}
+
+.talk-bubble-row.user {
+  justify-content: flex-end;
+}
+
+.talk-bubble-row.assistant {
+  justify-content: flex-start;
+}
+
+.talk-bubble {
+  max-width: 78%;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.talk-bubble.assistant {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.talk-bubble.user {
+  background: var(--series-blue);
+  color: #fff;
+}
+
+.talk-bubble-pending {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.talk-input-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.talk-mic-button {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--series-blue) 40%, transparent);
+  background: transparent;
+  color: var(--series-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.talk-mic-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.talk-mic-button.listening {
+  background: color-mix(in srgb, var(--series-blue) 35%, transparent);
+}
+
+.talk-text-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+}
+
+.talk-text-input:focus {
+  outline: none;
+  border-color: var(--series-blue);
+}
+
+@media (max-width: 600px) {
+  .talk-panel {
+    height: min(78vh, 560px);
   }
 }
 

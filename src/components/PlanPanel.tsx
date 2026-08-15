@@ -4,8 +4,9 @@ import type { TrainingPlan, WeeklyPlanDay } from '../types'
 import { Panel } from './Panel'
 import { GeneratePlanButton } from './GeneratePlanButton'
 import { PlanDayDetailModal } from './PlanDayDetailModal'
+import { ListGroup, ListRow } from './ListRow'
 import { formatDate } from '../utils/format'
-import { SESSION_COLOR, SESSION_ICON, SESSION_LABEL } from '../uiMeta'
+import { SESSION_COLOR, SESSION_LABEL } from '../uiMeta'
 
 export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSuccess: () => void }) {
   const [selectedDay, setSelectedDay] = useState<WeeklyPlanDay | null>(null)
@@ -29,41 +30,19 @@ export function PlanPanel({ plan, onSuccess }: { plan: TrainingPlan | null; onSu
             utvikling over tid vises i Progresjon-fanen.
           </p>
 
-          <div className="table-scroll" style={{ marginBottom: 20 }}>
-            <table className="activity-table plan-table responsive-table">
-              <thead>
-                <tr>
-                  <th>Dag</th>
-                  <th>Type</th>
-                  <th>Økt</th>
-                  <th>Distanse</th>
-                  <th>Innsats</th>
-                </tr>
-              </thead>
-              <tbody>
-                {plan.daily_plan.map((d) => {
-                  const SessionIcon = SESSION_ICON[d.session_type]
-                  return (
-                    <tr key={d.date} onClick={() => setSelectedDay(d)}>
-                      <td data-label="Dag">
-                        {d.day} <span className="tt-label">{formatDate(d.date)}</span>
-                      </td>
-                      <td data-label="Type">
-                        <span className="badge" style={{ color: SESSION_COLOR[d.session_type] }}>
-                          <SessionIcon />
-                          {SESSION_LABEL[d.session_type]}
-                        </span>
-                      </td>
-                      <td data-label="Økt">{d.title}</td>
-                      <td data-label="Distanse" className="tabular">
-                        {d.target_distance_km > 0 ? `${d.target_distance_km} km` : '—'}
-                      </td>
-                      <td data-label="Innsats">{d.target_effort}</td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+          <div style={{ marginBottom: 20 }}>
+            <ListGroup>
+              {plan.daily_plan.map((d) => (
+                <ListRow
+                  key={d.date}
+                  color={SESSION_COLOR[d.session_type]}
+                  title={`${d.day} · ${d.title}`}
+                  subtitle={`${formatDate(d.date)} · ${SESSION_LABEL[d.session_type]}${d.target_distance_km > 0 ? ` · ${d.target_distance_km} km` : ''}`}
+                  value={d.target_effort}
+                  onClick={() => setSelectedDay(d)}
+                />
+              ))}
+            </ListGroup>
           </div>
 
           <div style={{ marginBottom: 16 }}>
