@@ -767,11 +767,48 @@ button.list-row:hover {
 
 .talk-bubble {
   max-width: 78%;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
   padding: 10px 13px;
   border-radius: 14px;
   font-size: 13.5px;
   line-height: 1.45;
+}
+
+.talk-bubble-text {
   white-space: pre-wrap;
+}
+
+.talk-listen-button {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.talk-listen-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.talk-listen-button:hover {
+  opacity: 1;
+}
+
+.talk-listen-button.active {
+  opacity: 1;
+  color: var(--series-blue);
 }
 
 .talk-bubble.assistant {

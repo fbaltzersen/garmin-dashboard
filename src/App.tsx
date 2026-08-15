@@ -4,6 +4,7 @@ import './App.css'
 import { clearToken, getToken } from './api/github'
 import { useRollupData } from './hooks/useRollupData'
 import { useTalkChat } from './hooks/useTalkChat'
+import { useSpeech } from './hooks/useSpeech'
 import { PatModal } from './components/PatModal'
 import { SyncButton } from './components/SyncButton'
 import { HomeTab } from './components/HomeTab'
@@ -43,6 +44,7 @@ function App() {
   const [tab, setTab] = useState<Tab>('home')
   const { data, loading, error, reload } = useRollupData()
   const chat = useTalkChat(data)
+  const speech = useSpeech()
 
   function handleForget() {
     clearToken()
@@ -105,7 +107,7 @@ function App() {
 
           {tab === 'talk' && (
             <Suspense fallback={<LoadingSkeleton />}>
-              <TalkPanel chat={chat} />
+              <TalkPanel chat={chat} speech={speech} />
             </Suspense>
           )}
 

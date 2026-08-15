@@ -23,7 +23,10 @@ en GitHub Personal Access Token (PAT) du selv limer inn og som kun lagres i
 - **Talk-fanen**: `api/chat.ts` er en Vercel serverless-funksjon som kaller
   Anthropic sitt Messages API. Klienten sender med et utdrag av dashboardet den
   allerede har lastet (`src/api/chat.ts`) som kontekst — funksjonen trenger
-  dermed ingen egen GitHub-tilgang, kun `ANTHROPIC_API_KEY`.
+  dermed ingen egen GitHub-tilgang, kun `ANTHROPIC_API_KEY`. Hvert
+  assistent-svar har en "lytt"-knapp som sender teksten til `api/tts.ts`
+  (ElevenLabs, `ELEVENLABS_API_KEY`) og spiller av lyden — lyd genereres kun
+  når du trykker, og caches i nettleseren så samme svar ikke genereres på nytt.
 - **Hosting**: Vercel, koblet mot dette repoet via git — deployer automatisk
   ved push til `main`.
 

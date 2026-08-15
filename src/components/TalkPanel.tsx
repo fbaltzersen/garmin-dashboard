@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Mic, MicOff, Send, Sparkles } from 'lucide-react'
+import { Loader2, Mic, MicOff, Send, Sparkles, Volume2 } from 'lucide-react'
 import type { TalkChat } from '../hooks/useTalkChat'
+import type { Speech } from '../hooks/useSpeech'
 
 interface MinimalSpeechRecognition {
   continuous: boolean
@@ -21,7 +22,7 @@ function getSpeechRecognitionCtor(): (new () => MinimalSpeechRecognition) | null
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null
 }
 
-export function TalkPanel({ chat }: { chat: TalkChat }) {
+export function TalkPanel({ chat, speech }: { chat: TalkChat; speech: Speech }) {
   const { messages, sending, error, sendMessage } = chat
   const [draft, setDraft] = useState('')
   const [listening, setListening] = useState(false)
@@ -73,7 +74,19 @@ export function TalkPanel({ chat }: { chat: TalkChat }) {
       <div className="talk-messages" ref={listRef}>
         {messages.map((m, i) => (
           <div key={i} className={`talk-bubble-row ${m.role === 'user' ? 'user' : 'assistant'}`}>
-            <div className={`talk-bubble ${m.role === 'user' ? 'user' : 'assistant'}`}>{m.text}</div>
+            <div className={`talk-bubble ${m.role === 'user' ? 'user' : 'assistant'}`}>
+              <span className="talk-bubble-text">{m.text}</span>
+              {m.role === 'assistant' && (
+                <button
+                  type="button"
+                  className={`talk-listen-button ${speech.playingIndex === i ? 'active' : ''}`}
+                  onClick={() => void speech.play(i, m.text)}
+                  title={speech.playingIndex === i ? 'Stopp' : 'Lytt til svaret'}
+                >
+                  {speech.loadingIndex === i ? <Loader2 className="spin" /> : <Volume2 />}
+                </button>
+              )}
+            </div>
           </div>
         ))}
         {sending && (
@@ -82,6 +95,7 @@ export function TalkPanel({ chat }: { chat: TalkChat }) {
           </div>
         )}
         {error && <p className="sync-status error" style={{ padding: '0 4px' }}>{error}</p>}
+        {speech.error && <p className="sync-status error" style={{ padding: '0 4px' }}>{speech.error}</p>}
       </div>
       <div className="talk-input-bar">
         {SpeechRecognitionCtor && (
